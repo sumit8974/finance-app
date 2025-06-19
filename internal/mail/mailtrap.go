@@ -45,10 +45,8 @@ func (m mailtrapClient) Send(templateFile, username, email string, data any, isS
 
 	// message.AddAlternative("text/html", body.String())
 	message.SetBody("text/html", body.String())
-    fmt.Println("V", m)
 	// dialer := gomail.NewDialer("live.smtp.mailtrap.io", 587, "api", m.apiKey)
 	dialer := gomail.NewDialer("smtp.gmail.com", 587, m.fromEmail, m.appPass)
-    fmt.Println("MSG", message)
 	var retryErr error
 	for i := range maxRetires {
 		retryErr = dialer.DialAndSend(message)
