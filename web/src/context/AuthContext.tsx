@@ -55,7 +55,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setLoading(true);      
       const token = await api.post('/auth/login', { email, password });
-      setToken(token.data.token);
       const user = await api.get('/users/token', {
         headers: {
           Authorization: `Bearer ${token.data.token}`,
@@ -70,6 +69,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Save user to localStorage
       localStorage.setItem('user', JSON.stringify(userDetails));
       localStorage.setItem('access_token', token.data.token);
+      setToken(token.data.token);
       setUser(userDetails);
       
       toast({
