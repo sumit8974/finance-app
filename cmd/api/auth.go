@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -16,7 +17,7 @@ import (
 type RegisterUserPayload struct {
 	Username string `json:"username" validate:"required,max=100"`
 	Email    string `json:"email" validate:"required,email,max=255"`
-	Password string `json:"password" validate:"required,min=4,max=72"`
+	Password string `json:"password" validate:"required,min=6,max=72"`
 }
 
 type UserWithToken struct {
@@ -95,10 +96,10 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 
 	isProdEnv := app.config.env == "production"
 	vars := struct {
-		Username string
+		Username      string
 		ActivationURL string
 	}{
-		Username: user.Username,
+		Username:      user.Username,
 		ActivationURL: activationURL,
 	}
 	fmt.Println(mail.UserWelcomeTemplate, user.Username, user.Email, vars)
@@ -128,7 +129,7 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 
 type LoginUserPayload struct {
 	Email    string `json:"email" validate:"required,email,max=255"`
-	Password string `json:"password" validate:"required,min=4,max=72"`
+	Password string `json:"password" validate:"required,min=6,max=72"`
 }
 
 type LoginUserResponse struct {
@@ -175,7 +176,7 @@ func (app *application) loginUserHandler(w http.ResponseWriter, r *http.Request)
 
 	if err := user.Password.Compare(payload.Password); err != nil {
 		app.logger.Errorw("failed to compare password", "error", err)
-		app.unauthorizedErrorResponse(w, r, err)
+		app.badRequestResponse(w, r, errors.New("error invalid password or email"))
 		return
 	}
 

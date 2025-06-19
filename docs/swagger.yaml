@@ -23,7 +23,7 @@ definitions:
         type: string
       password:
         maxLength: 72
-        minLength: 4
+        minLength: 6
         type: string
     required:
     - email
@@ -41,7 +41,7 @@ definitions:
         type: string
       password:
         maxLength: 72
-        minLength: 4
+        minLength: 6
         type: string
       username:
         maxLength: 100
