@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/joho/godotenv"
@@ -27,12 +26,12 @@ const version = "1.1.0"
 //	@license.name	Apache 2.0
 //	@license.url	http://www.apache.org/licenses/LICENSE-2.0.html
 
-//	@BasePath					/v1
+// @BasePath					/v1
 //
-//	@securityDefinitions.apikey	ApiKeyAuth
-//	@in							header
-//	@name						Authorization
-//	@description
+// @securityDefinitions.apikey	ApiKeyAuth
+// @in							header
+// @name						Authorization
+// @description
 func main() {
 	// Load .env file
 	err := godotenv.Load()
@@ -49,12 +48,12 @@ func main() {
 			maxIdleConns: env.GetInt("DB_MAX_IDLE_CONNS", 30),
 			maxIdleTime:  env.GetString("DB_MAX_IDLE_TIME", "15m"),
 		},
-	// 	redisCfg: redisConfig{
-	// 		addr:    env.GetString("REDIS_ADDR", "localhost:6379"),
-	// 		pw:      env.GetString("REDIS_PW", ""),
-	// 		db:      env.GetInt("REDIS_DB", 0),
-	// 		enabled: env.GetBool("REDIS_ENABLED", false),
-	// 	},
+		// 	redisCfg: redisConfig{
+		// 		addr:    env.GetString("REDIS_ADDR", "localhost:6379"),
+		// 		pw:      env.GetString("REDIS_PW", ""),
+		// 		db:      env.GetInt("REDIS_DB", 0),
+		// 		enabled: env.GetBool("REDIS_ENABLED", false),
+		// 	},
 		env: env.GetString("ENV", "development"),
 		mail: mailConfig{
 			exp:       time.Hour * 24 * 3, // 3 days
@@ -63,7 +62,7 @@ func main() {
 				apiKey: env.GetString("SENDGRID_API_KEY", ""),
 			},
 			mailTrap: mailTrapConfig{
-				apiKey: env.GetString("MAILTRAP_API_KEY", ""),
+				apiKey:  env.GetString("MAILTRAP_API_KEY", ""),
 				appPass: env.GetString("GMAIL_APP_PASS", ""),
 			},
 		},
@@ -125,8 +124,8 @@ func main() {
 	}
 
 	app := &application{
-		config:        cfg,
-		store:         store,
+		config: cfg,
+		store:  store,
 		// cacheStorage:  cacheStorage,
 		logger:        logger,
 		mailer:        mailTrap,
