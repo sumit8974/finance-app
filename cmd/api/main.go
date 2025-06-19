@@ -33,10 +33,14 @@ const version = "1.1.0"
 // @name						Authorization
 // @description
 func main() {
+	// Logger
+	logger := zap.Must(zap.NewProduction()).Sugar()
+	defer logger.Sync()
+
 	// Load .env file
 	err := godotenv.Load()
 	if err != nil {
-		panic(err)
+		logger.Error("No .env file found, proceeding with default env vars")
 	}
 	cfg := config{
 		addr:        env.GetString("ADDR", ":8000"),
@@ -83,10 +87,6 @@ func main() {
 			Enabled:              env.GetBool("RATE_LIMITER_ENABLED", true),
 		},
 	}
-
-	// Logger
-	logger := zap.Must(zap.NewProduction()).Sugar()
-	defer logger.Sync()
 
 	// Main Database
 	db, err := db.New(
