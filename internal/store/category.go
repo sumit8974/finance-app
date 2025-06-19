@@ -5,7 +5,6 @@ import (
 	"database/sql"
 )
 
-
 type CategoryStore struct {
 	db *sql.DB
 }
@@ -28,7 +27,7 @@ func (c *CategoryStore) ListCategories(ctx context.Context) ([]*Category, error)
 	`
 	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
 	defer cancel()
-	
+
 	rows, err := c.db.QueryContext(ctx, query)
 	if err != nil {
 		return nil, err
@@ -54,7 +53,7 @@ func (c *CategoryStore) GetByName(ctx context.Context, name string) (*Category, 
 	`
 	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
 	defer cancel()
-	
+
 	category := &Category{}
 	err := c.db.QueryRowContext(ctx, query, name).Scan(&category.ID, &category.Name, &category.Type)
 	if err != nil {

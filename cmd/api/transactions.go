@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -50,8 +49,7 @@ func (app *application) createTransactionHandler(w http.ResponseWriter, r *http.
 
 	// TODO: Try to get the category id using the category name from the database
 	ctx := r.Context()
-	fmt.Println("payload", payload)
-	categoryDetails, err := app.store.Category.GetByName(ctx, strings.ToLower(payload.CategoryName))
+	categoryDetails, err := app.store.Category.GetByName(ctx, payload.CategoryName)
 	if categoryDetails == nil {
 		app.badRequestResponse(w, r, fmt.Errorf("category not found"))
 		return
@@ -71,6 +69,7 @@ func (app *application) createTransactionHandler(w http.ResponseWriter, r *http.
 		TransactionType: payload.TransactionType,
 		Description:     payload.Description,
 		CategoryID:      categoryDetails.ID,
+		CategoryName:    categoryDetails.Name,
 	}
 
 	transactionData, err := app.store.Transactions.Create(ctx, transaction)
@@ -248,7 +247,7 @@ func (app *application) updateTransactionByIDHandler(w http.ResponseWriter, r *h
 	transaction := getTransactionFromContext(r)
 
 	ctx := r.Context()
-	categoryDetails, err := app.store.Category.GetByName(ctx, strings.ToLower(payload.CategoryName))
+	categoryDetails, err := app.store.Category.GetByName(ctx, payload.CategoryName)
 	if err != nil {
 		if err == store.ErrNotFound {
 			app.badRequestResponse(w, r, fmt.Errorf("category not found"))

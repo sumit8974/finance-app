@@ -75,3 +75,16 @@ func (app *application) checkTransactionOwnership(next http.HandlerFunc) http.Ha
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
+
+func (app *application) rateLimitMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if app.config.rateLimiter.Enabled {
+			if allow, retry := app.rateLimiter.Allow(r.RemoteAddr); !allow {
+				app.rateLimitExceededResponse(w, r, retry.String())
+				return
+			}
+		}
+		// Implement rate limiting logic here
+		next.ServeHTTP(w, r)
+	})
+}

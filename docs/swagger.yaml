@@ -414,6 +414,33 @@ paths:
       summary: Update a transaction by ID
       tags:
       - transactions
+  /users/activate/{token}:
+    put:
+      consumes:
+      - application/json
+      description: Acitvate a new user account
+      parameters:
+      - description: User invitation token
+        in: path
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: User activated
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Activate user
+      tags:
+      - users
   /users/token:
     get:
       consumes:

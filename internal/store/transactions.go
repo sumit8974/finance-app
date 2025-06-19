@@ -64,19 +64,18 @@ func (t *TransactionStore) ListTransactionsByUser(ctx context.Context, userID in
 		JOIN categories c ON t.category_id = c.id
 		WHERE t.user_id = $1
 	`
-	fmt.Println("Initial query:", query)
 	args := []interface{}{userID}
 
 	if filter.StartDate != "" {
-		query += " AND created_at >= $2"
+		query += " AND t.created_at >= $2"
 		args = append(args, filter.StartDate)
 	}
 	if filter.EndDate != "" {
-		query += " AND created_at <= $3"
+		query += " AND t.created_at <= $3"
 		args = append(args, filter.EndDate)
 	}
 	if filter.TransactionType != "" {
-		query += " AND transaction_type = $4"
+		query += " AND t.transaction_type = $4"
 		args = append(args, filter.TransactionType)
 	}
 

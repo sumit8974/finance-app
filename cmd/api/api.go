@@ -16,26 +16,31 @@ import (
 	"github.com/sumit8974/finance-tracker/docs"
 	"github.com/sumit8974/finance-tracker/internal/auth"
 	"github.com/sumit8974/finance-tracker/internal/env"
+	"github.com/sumit8974/finance-tracker/internal/mail"
+	"github.com/sumit8974/finance-tracker/internal/ratelimiter"
 	"github.com/sumit8974/finance-tracker/internal/store"
 	httpSwagger "github.com/swaggo/http-swagger/v2"
 	"go.uber.org/zap"
 )
 
 type application struct {
-	config config
-	store  store.Storage
+	config        config
+	store         store.Storage
 	authenticator auth.Authenticator
 	logger        *zap.SugaredLogger
+	mailer        mail.MailerClient
+	rateLimiter   ratelimiter.RateLimiter
 }
 
 type config struct {
-	addr string
-	db   dbConfig
-	env  string
-	apiURL string
+	addr        string
+	db          dbConfig
+	env         string
+	apiURL      string
 	frontendURL string
-	mail mailConfig
-	auth authConfig
+	mail        mailConfig
+	auth        authConfig
+	rateLimiter ratelimiter.RateLimiterConfig
 }
 
 type dbConfig struct {
@@ -49,8 +54,14 @@ type sendGridConfig struct {
 	apiKey string
 }
 
+type mailTrapConfig struct {
+	apiKey string
+	appPass string
+}
+
 type mailConfig struct {
 	sendGrid  sendGridConfig
+	mailTrap  mailTrapConfig
 	fromEmail string
 	exp       time.Duration
 }
@@ -79,23 +90,21 @@ func (app *application) mount() http.Handler {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 	r.Use(cors.Handler(cors.Options{
-		AllowedOrigins:   []string{env.GetString("CORS_ALLOWED_ORIGIN", "http://localhost:8080")},
+		AllowedOrigins:   []string{env.GetString("CORS_ALLOWED_ORIGIN", "http://localhost:8081")},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 		ExposedHeaders:   []string{"Link"},
 		AllowCredentials: false,
 		MaxAge:           300, // Maximum value not ignored by any of major browsers
 	}))
-	
-	// if app.config.rateLimiter.Enabled {
-	// 	r.Use(app.RateLimiterMiddleware)
-	// }
 
 	// Set a timeout value on the request context (ctx), that will signal
 	// through ctx.Done() that the request has timed out and further
 	// processing should be stopped.
 	r.Use(middleware.Timeout(60 * time.Second))
-
+	if app.config.rateLimiter.Enabled {
+		r.Use(app.rateLimitMiddleware)
+	}
 	r.Route("/api/v1", func(r chi.Router) {
 		// Operations
 		r.Get("/health", app.healthCheckHandler)
@@ -114,13 +123,6 @@ func (app *application) mount() http.Handler {
 				r.Delete("/", app.checkTransactionOwnership(app.deleteTransactionByIDHandler))
 				r.Patch("/", app.checkTransactionOwnership(app.updateTransactionByIDHandler))
 			})
-			// r.Route("/{postID}", func(r chi.Router) {
-			// 	r.Use(app.postsContextMiddleware)
-			// 	r.Get("/", app.getPostHandler)
-
-			// 	r.Patch("/", app.checkPostOwnership("moderator", app.updatePostHandler))
-			// 	r.Delete("/", app.checkPostOwnership("admin", app.deletePostHandler))
-			// })
 		})
 		r.Route("/categories", func(r chi.Router) {
 			r.Use(app.AuthTokenMiddleware)
@@ -129,23 +131,14 @@ func (app *application) mount() http.Handler {
 		})
 
 		r.Route("/users", func(r chi.Router) {
-			r.Use(app.AuthTokenMiddleware)
-		// 	r.Put("/activate/{token}", app.activateUserHandler)
-			r.Get("/token", app.getUserByTokenHandler)
+			r.Put("/activate/{token}", app.activateUserHandler)
+			r.Route("/", func(r chi.Router) {
+				r.Use(app.AuthTokenMiddleware)
+				// 	r.Put("/activate/{token}", app.activateUserHandler)
+				r.Get("/token", app.getUserByTokenHandler)
 
-		// 	r.Route("/{userID}", func(r chi.Router) {
-		// 		r.Use(app.AuthTokenMiddleware)
-
-		// 		r.Get("/", app.getUserHandler)
-		// 		r.Put("/follow", app.followUserHandler)
-		// 		r.Put("/unfollow", app.unfollowUserHandler)
+			})
 		})
-
-		// 	r.Group(func(r chi.Router) {
-		// 		r.Use(app.AuthTokenMiddleware)
-		// 		r.Get("/feed", app.getUserFeedHandler)
-		// 	})
-		// })
 
 		// Public routes
 		r.Route("/auth", func(r chi.Router) {
