@@ -5,8 +5,10 @@ import './index.css';
 import { AuthProvider } from './context/AuthContext';
 import { TransactionProvider } from './context/TransactionContext';
 import { ThemeProvider } from './components/ThemeProvider';
+import React from 'react';
 
 createRoot(document.getElementById("root")!).render(
+  <React.StrictMode>
   <ThemeProvider defaultTheme="system" storageKey="finance-theme">
     <AuthProvider>
       <TransactionProvider>
@@ -14,4 +16,5 @@ createRoot(document.getElementById("root")!).render(
       </TransactionProvider>
     </AuthProvider>
   </ThemeProvider>
+  </React.StrictMode>
 );

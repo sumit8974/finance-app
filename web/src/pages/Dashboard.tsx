@@ -24,6 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Link } from 'react-router-dom';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -216,7 +217,7 @@ const Dashboard = () => {
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Recent Transactions</CardTitle>
         <Button variant="ghost" size="sm" asChild>
-          <a href="/transactions">View All</a>
+          <Link to={"/transactions"}>View All</Link>
         </Button>
       </CardHeader>
       <CardContent>

@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "./AuthContext";
 import api from "@/api/axios";
-import { addWeeks, set } from "date-fns";
+import { getToken } from "@/utils/token";
 
 // Define transaction types
 export type TransactionType = "expense" | "income";
@@ -126,19 +126,19 @@ export const TransactionProvider: React.FC<{ children: React.ReactNode }> = ({
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [categories, setCategories] = useState<Categories[]>([]);
   const [groups, setGroups] = useState<TransactionGroup[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const { user } = useAuth();
 
   // Load saved transactions and groups on mount or when user changes
   useEffect(() => {
-    setLoading(true);
     const loadTransactions = async () => {
-      // if (!user) return;
+      if (!user) return;
+      if (!getToken()) return;
       try {
+        setLoading(true);
         const loadedTransactions = await api.get(`/transactions`);
         if (!loadedTransactions.data) {
           setLoading(false);
-          setTransactions([]);
           return;
         }
         const transactions: Transaction[] = loadedTransactions.data.map(
@@ -147,69 +147,57 @@ export const TransactionProvider: React.FC<{ children: React.ReactNode }> = ({
             amount: transaction.amount,
             description: transaction.description,
             category: transaction.categoryName,
-            date: transaction.updatedAt,
+            date: transaction.createdAt,
             type: transaction.transactionType,
             groupId: transaction.groupId,
             createdBy: transaction.userId,
           })
         );
         setTransactions(transactions);
-      } catch (error) {
         setLoading(false);
+      } catch (error) {
         toast({
           title: "Error loading transactions",
           description: error.message,
           variant: "destructive",
         });
+        setLoading(false);
         console.error("Failed to load transactions", error);
-        setTransactions([]);
+        // setTransactions([]);
       }
-      // if (loadedGroups) {
-      //   try {
-      //     setGroups(JSON.parse(loadedGroups));
-      //   } catch (e) {
-      //     console.error('Failed to parse groups', e);
-      //     setGroups(generateSampleGroups(user.id));
-      //   }
-      // } else {
-      //   setGroups(generateSampleGroups(user.id));
-      // }
     };
     loadTransactions();
-    setLoading(false);
   }, [user]);
 
   // Load categories
   useEffect(() => {
-    async function fetchCategories() {
-      const loadedCategories = await api.get("/categories");
-      const categories: Categories[] = loadedCategories.data.map(
-        (category: any) => ({
-          id: category.id,
-          name: category.name,
-          type: category.type,
-        })
-      );
-      setCategories(categories);
-    }
-    fetchCategories();
+    const loadCategories = async () => {
+      try {
+        if (!user) return;
+        if (!getToken()) return;
+        setLoading(true);
+        const loadedCategories = await api.get("/categories");
+        const categories: Categories[] = loadedCategories.data.map(
+          (category: any) => ({
+            id: category.id,
+            name: category.name,
+            type: category.type,
+          })
+        );
+        setCategories(categories);
+        setLoading(false);
+      } catch (error) {
+        toast({
+          title: "Error loading categories",
+          description: error.message,
+          variant: "destructive",
+        });
+        setLoading(false);
+        console.error("Failed to load categories", error);
+      }
+    };
+    loadCategories();
   }, [user]);
-
-  // Save transactions and groups whenever they change
-  useEffect(() => {
-    if (user && transactions.length > 0) {
-      localStorage.setItem(
-        `transactions-${user.id}`,
-        JSON.stringify(transactions)
-      );
-    }
-  }, [transactions, user]);
-
-  useEffect(() => {
-    if (user && groups.length > 0) {
-      localStorage.setItem(`groups-${user.id}`, JSON.stringify(groups));
-    }
-  }, [groups, user]);
 
   // Add new transaction
   const addTransaction = async (
@@ -236,6 +224,7 @@ export const TransactionProvider: React.FC<{ children: React.ReactNode }> = ({
         description: transactionRes.data.description,
         groupId: transactionRes.data?.groupId,
       };
+      console.log("newTransaction", newTransaction);
       setTransactions((prev) => [newTransaction, ...prev]);
       toast({
         title: `${transaction.type === "expense" ? "Expense" : "Income"} added`,
@@ -299,7 +288,9 @@ export const TransactionProvider: React.FC<{ children: React.ReactNode }> = ({
       console.log("updatedTransaction", updatedTransaction);
       console.log("transactions", transactions);
       setTransactions((prev) =>
-        prev.map((t) => (t.id === updatedTransaction.id ? { ...updatedTransaction } : t))
+        prev.map((t) =>
+          t.id === updatedTransaction.id ? { ...updatedTransaction } : t
+        )
       );
       // setTransactions((prev) => [updatedTransaction, ...prev]);
 
@@ -320,6 +311,7 @@ export const TransactionProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // Get transactions by month
   const getTransactionsByMonth = (month: number, year: number) => {
+
     return transactions.filter((t) => {
       const transactionDate = new Date(t.date);
       return (

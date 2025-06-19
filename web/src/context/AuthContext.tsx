@@ -2,7 +2,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import api from '@/api/axios';
-import { setToken } from '@/utils/token';
 
 // Define user type
 export type User = {
@@ -37,16 +36,18 @@ export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [token, setToken] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
   // Check if user is logged in on component mount
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
-    if (storedUser) {
+    const storedToken = localStorage.getItem('access_token');
+    if (storedToken && storedUser) {
+      setToken(storedToken);
       setUser(JSON.parse(storedUser));
     }
-    setLoading(false);
   }, []);
 
   // Login function
@@ -55,36 +56,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(true);      
       const token = await api.post('/auth/login', { email, password });
       setToken(token.data.token);
-      // Assuming the API returns a user object
       const user = await api.get('/users/token', {
         headers: {
-          Authorization: `Bearer ${token.data.data.token}`,
+          Authorization: `Bearer ${token.data.token}`,
         }
       })
-      console.log(user);
-      
-      // For demo purposes, we'll accept any email/password and create a fake user
       const userDetails = {
         id: user.data.user.id,
         name: user.data.user.username,
         email: user.data.user.email,
         roleId: user.data.user.role_id,
       };
-      console.log("t",userDetails);
       // Save user to localStorage
       localStorage.setItem('user', JSON.stringify(userDetails));
+      localStorage.setItem('access_token', token.data.token);
       setUser(userDetails);
       
       toast({
         title: "Login successful",
         description: "Welcome back!",
       });
+      setLoading(false);
     } catch (error) {
       toast({
         title: "Login failed",
-        description: "Invalid email or password",
+        description: error.response?.data?.error || "An error occurred",
         variant: "destructive",
       });
+      setLoading(false);
       throw error;
     } finally {
       setLoading(false);
@@ -94,22 +93,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Register function
   const register = async (name: string, email: string, password: string) => {
     try {
-      // This is a mock implementation. In a real app, you'd call an API
       setLoading(true);
-      
-      const user = await api.post('/auth/register', { "username": name, email, password });
-      
+      await api.post('/auth/register', { "username": name, email, password });
       toast({
         title: "Registration successful",
         description: "Your account has been created",
       });
+      setLoading(false);
     } catch (error) {
-      console.log(error);
       toast({
         title: "Registration failed",
         description: error.response?.data?.error || "An error occurred",
         variant: "destructive",
       });
+      setLoading(false);
       throw error;
     } finally {
       setLoading(false);
@@ -119,6 +116,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Logout function
   const logout = () => {
     localStorage.removeItem('user');
+    localStorage.removeItem('access_token');
     setUser(null);
     toast({
       title: "Logged out",
@@ -133,7 +131,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     login,
     register,
     logout,
-    isAuthenticated: !!user,
+    isAuthenticated: !!token && !!user,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -1,58 +1,58 @@
-
-import { useState, FormEvent } from 'react';
-import { Link, Navigate } from 'react-router-dom';
-import { useAuth } from '@/context/AuthContext';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { useState, FormEvent } from "react";
+import { Link, Navigate } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 
 const RegisterPage = () => {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   const { register, isAuthenticated } = useAuth();
-  
+
   // If already authenticated, redirect to dashboard
   if (isAuthenticated) {
     return <Navigate to="/dashboard" replace />;
   }
-  
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (isSubmitting) return;
-    
+
     setError(null);
     setIsSubmitting(true);
-    
+
     try {
       if (!name || !email || !password) {
-        throw new Error('Please fill in all fields');
+        throw new Error("Please fill in all fields");
       }
-      
+
       if (password !== confirmPassword) {
-        throw new Error('Passwords do not match');
+        throw new Error("Passwords do not match");
       }
-      
+
       if (password.length < 6) {
-        throw new Error('Password must be at least 6 characters');
+        throw new Error("Password must be at least 6 characters");
       }
-      
+
       await register(name, email, password);
     } catch (error) {
       if (error instanceof Error) {
         setError(error.message);
       } else {
-        setError('An error occurred during registration');
+        setError("An error occurred during registration");
       }
     } finally {
       setIsSubmitting(false);
     }
   };
-  
+
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-muted/30">
       <div className="w-full max-w-md space-y-8 bg-background p-8 rounded-lg shadow-lg border animate-fade-in">
@@ -60,13 +60,7 @@ const RegisterPage = () => {
           <h1 className="text-3xl font-bold text-primary">FinTracker</h1>
           <p className="mt-2 text-muted-foreground">Create your account</p>
         </div>
-        
-        {/* {error && (
-          <div className="bg-destructive/10 text-destructive p-3 rounded-md text-sm">
-            {error}
-          </div>
-        )} */}
-        
+
         <form className="space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-2">
             <Label htmlFor="name">User Name</Label>
@@ -78,7 +72,7 @@ const RegisterPage = () => {
               required
             />
           </div>
-          
+
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
@@ -90,7 +84,7 @@ const RegisterPage = () => {
               required
             />
           </div>
-          
+
           <div className="space-y-2">
             <Label htmlFor="password">Password</Label>
             <Input
@@ -103,7 +97,7 @@ const RegisterPage = () => {
               minLength={6}
             />
           </div>
-          
+
           <div className="space-y-2">
             <Label htmlFor="confirm-password">Confirm Password</Label>
             <Input
@@ -115,29 +109,28 @@ const RegisterPage = () => {
               required
             />
           </div>
-          
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={isSubmitting}
-          >
+
+          <Button type="submit" className="w-full" disabled={isSubmitting}>
             {isSubmitting ? (
               <>
                 <span className="animate-spin mr-2">◌</span>
                 Creating account...
               </>
             ) : (
-              'Create account'
+              "Create account"
             )}
           </Button>
         </form>
-        
+
         <p className="text-center text-sm text-muted-foreground">
-          Already have an account?{' '}
+          Already have an account?{" "}
           <Link to="/login" className="text-primary hover:underline">
             Sign in
           </Link>
         </p>
+      </div>
+      <div className="absolute top-4 right-4">
+        <ThemeSwitcher />
       </div>
     </div>
   );

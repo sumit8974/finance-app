@@ -8,7 +8,6 @@ import { format, subMonths, startOfMonth, addDays, getMonth, getYear } from 'dat
 import MonthPicker from '@/components/MonthPicker';
 import TabView from '@/components/TabView';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 
 // Colors for charts
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658', '#8dd1e1'];
@@ -134,10 +133,11 @@ const Analytics = () => {
 
   // Format for the tooltip value
   const formatTooltipValue = (value: any): string => {
+    console.log(value);
     if (typeof value === 'number') {
-      return `$${value.toFixed(2)}`;
+      return `₹${value.toFixed(2)}`;
     }
-    return `$${value}`;
+    return `₹${value}`;
   };
   
   // Custom chart config for consistent styling
@@ -152,10 +152,11 @@ const Analytics = () => {
     const { active, payload } = props;
     if (active && payload && payload.length) {
       const data = payload[0];
+      console.log(data);
+      
       return (
         <div className="bg-background/90 border border-border p-2 rounded-md shadow-md">
           <p className="font-medium">{`${data.name}: ${formatTooltipValue(data.value)}`}</p>
-          <p className="text-muted-foreground">{`(${(data.percent * 100).toFixed(0)}%)`}</p>
         </div>
       );
     }
@@ -171,7 +172,7 @@ const Analytics = () => {
     const radius = outerRadius * 1.2; // Position labels outside the pie
     const x = cx + radius * Math.cos(-midAngle * RADIAN);
     const y = cy + radius * Math.sin(-midAngle * RADIAN);
-    
+    console.log("CO",name, percent);
     return (
       <text 
         x={x} 
@@ -205,7 +206,7 @@ const Analytics = () => {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="month" />
                 <YAxis />
-                <Tooltip formatter={(value) => [`$${value}`, '']} />
+                <Tooltip formatter={(value) => [`₹${value}`, '']} />
                 <Legend wrapperStyle={{ paddingTop: 15 }} />
                 <Line type="monotone" dataKey="expense" stroke="#F87171" name="Expenses" strokeWidth={2} />
                 <Line type="monotone" dataKey="income" stroke="#4ADE80" name="Income" strokeWidth={2} />
@@ -272,7 +273,7 @@ const Analytics = () => {
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="day" />
                   <YAxis />
-                  <Tooltip formatter={(value) => [`$${value}`, 'Expenses']} />
+                  <Tooltip formatter={(value) => [`₹${value}`, 'Expenses']} />
                   <Bar dataKey="expense" fill="#F87171" name="Expenses" />
                 </BarChart>
               </ResponsiveContainer>
@@ -303,7 +304,7 @@ const Analytics = () => {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="month" />
                 <YAxis />
-                <Tooltip formatter={(value) => [`$${value}`, '']} />
+                <Tooltip formatter={(value) => [`₹${value}`, '']} />
                 <Legend wrapperStyle={{ paddingTop: 15 }} />
                 <Line type="monotone" dataKey="expense" stroke="#F87171" name="Expenses" strokeWidth={2} />
                 <Line type="monotone" dataKey="income" stroke="#4ADE80" name="Income" strokeWidth={2} />
@@ -370,7 +371,7 @@ const Analytics = () => {
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="day" />
                   <YAxis />
-                  <Tooltip formatter={(value) => [`$${value}`, 'Expenses']} />
+                  <Tooltip formatter={(value) => [`₹${value}`, 'Expenses']} />
                   <Bar dataKey="expense" fill="#F87171" name="Expenses" />
                 </BarChart>
               </ResponsiveContainer>
