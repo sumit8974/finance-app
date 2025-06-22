@@ -39,14 +39,14 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAddTransactionOpen, setIsAddTransactionOpen] = useState(false);
   const isMobile = useIsMobile();
-  
+  const isGroupEnabled = import.meta.env.VITE_IS_GROUP_ENABLED === 'true';
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { name: 'Transactions', href: '/transactions', icon: ListOrdered },
     { name: 'Analytics', href: '/analytics', icon: BarChart },
-    { name: 'Groups', href: '/groups', icon: Users },
-  ];
-  
+    isGroupEnabled ? { name: 'Groups', href: '/groups', icon: Users } : null,
+  ].filter(Boolean);
+
   const currentPath = location.pathname;
   
   const closeMobileMenu = () => setIsMobileMenuOpen(false);

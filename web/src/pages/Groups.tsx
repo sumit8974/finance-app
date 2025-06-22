@@ -1,79 +1,87 @@
-
-import { useState } from 'react';
-import { useTransactions } from '@/context/TransactionContext';
-import { useAuth } from '@/context/AuthContext';
-import { Link } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { useState } from "react";
+import { useTransactions } from "@/context/TransactionContext";
+import { useAuth } from "@/context/AuthContext";
+import { Link } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogFooter
-} from '@/components/ui/dialog';
-import { Textarea } from '@/components/ui/textarea';
-import { UserPlus, Users, ArrowRight, X } from 'lucide-react';
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { UserPlus, Users, ArrowRight, X } from "lucide-react";
 
 const Groups = () => {
+  const isGroupEnabled = import.meta.env.VITE_IS_GROUP_ENABLED;
+  if (isGroupEnabled == "false") {
+    return (
+      <div className="flex items-center justify-center min-h-[85vh]">
+        <span className="text-muted-foreground text-lg font-semibold text-center">
+          Group feature is coming soon
+        </span>
+      </div>
+    );
+  }
   const { user } = useAuth();
   const { groups, addGroup } = useTransactions();
-  
+
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [groupName, setGroupName] = useState('');
-  const [memberEmail, setMemberEmail] = useState('');
+  const [groupName, setGroupName] = useState("");
+  const [memberEmail, setMemberEmail] = useState("");
   const [members, setMembers] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Add member to the list
   const handleAddMember = () => {
     if (!memberEmail.trim()) return;
-    
+
     // Simple email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(memberEmail)) {
-      setError('Please enter a valid email address');
+      setError("Please enter a valid email address");
       return;
     }
-    
+
     // Check if member already exists
     if (members.includes(memberEmail)) {
-      setError('This member has already been added');
+      setError("This member has already been added");
       return;
     }
-    
-    setMembers(prev => [...prev, memberEmail]);
-    setMemberEmail('');
+
+    setMembers((prev) => [...prev, memberEmail]);
+    setMemberEmail("");
     setError(null);
   };
-  
+
   // Remove member from the list
   const handleRemoveMember = (email: string) => {
-    setMembers(prev => prev.filter(m => m !== email));
+    setMembers((prev) => prev.filter((m) => m !== email));
   };
-  
+
   // Create new group
   const handleCreateGroup = () => {
     if (!groupName.trim()) {
-      setError('Please enter a group name');
+      setError("Please enter a group name");
       return;
     }
-    
+
     addGroup(groupName, members);
     setIsAddDialogOpen(false);
     resetForm();
   };
-  
+
   const resetForm = () => {
-    setGroupName('');
-    setMemberEmail('');
+    setGroupName("");
+    setMemberEmail("");
     setMembers([]);
     setError(null);
   };
-  
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -83,12 +91,16 @@ const Groups = () => {
           Create Group
         </Button>
       </div>
-      
+
       {/* Groups list */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {groups.length > 0 ? (
-          groups.map(group => (
-            <Link key={group.id} to={`/groups/${group.id}`} className="block transition-transform hover:scale-[1.01]">
+          groups.map((group) => (
+            <Link
+              key={group.id}
+              to={`/groups/${group.id}`}
+              className="block transition-transform hover:scale-[1.01]"
+            >
               <Card className="h-full">
                 <CardHeader>
                   <CardTitle>{group.name}</CardTitle>
@@ -98,7 +110,7 @@ const Groups = () => {
                     <Users className="h-4 w-4 mr-1" />
                     <span>{group.members.length} members</span>
                   </div>
-                  
+
                   <div className="flex justify-end">
                     <Button variant="ghost" size="sm" className="text-primary">
                       View Details
@@ -113,7 +125,8 @@ const Groups = () => {
           <div className="col-span-full bg-muted/40 rounded-lg p-8 text-center">
             <h3 className="text-lg font-medium mb-2">No Groups Yet</h3>
             <p className="text-muted-foreground mb-4">
-              Create a group to share expenses with friends, family, or roommates
+              Create a group to share expenses with friends, family, or
+              roommates
             </p>
             <Button onClick={() => setIsAddDialogOpen(true)}>
               <UserPlus className="mr-2 h-4 w-4" />
@@ -122,12 +135,15 @@ const Groups = () => {
           </div>
         )}
       </div>
-      
+
       {/* Create Group Dialog */}
-      <Dialog open={isAddDialogOpen} onOpenChange={(open) => {
-        setIsAddDialogOpen(open);
-        if (!open) resetForm();
-      }}>
+      <Dialog
+        open={isAddDialogOpen}
+        onOpenChange={(open) => {
+          setIsAddDialogOpen(open);
+          if (!open) resetForm();
+        }}
+      >
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle>Create New Group</DialogTitle>
@@ -135,13 +151,13 @@ const Groups = () => {
               Create a group to share and track expenses with others
             </DialogDescription>
           </DialogHeader>
-          
+
           {error && (
             <div className="bg-destructive/10 text-destructive p-3 rounded-md text-sm">
               {error}
             </div>
           )}
-          
+
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="name">Group Name</Label>
@@ -152,7 +168,7 @@ const Groups = () => {
                 onChange={(e) => setGroupName(e.target.value)}
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label>Add Members</Label>
               <div className="flex space-x-2">
@@ -161,19 +177,21 @@ const Groups = () => {
                   value={memberEmail}
                   onChange={(e) => setMemberEmail(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
+                    if (e.key === "Enter") {
                       e.preventDefault();
                       handleAddMember();
                     }
                   }}
                 />
-                <Button type="button" onClick={handleAddMember}>Add</Button>
+                <Button type="button" onClick={handleAddMember}>
+                  Add
+                </Button>
               </div>
               <p className="text-xs text-muted-foreground">
                 Enter email addresses of people you want to add to this group
               </p>
             </div>
-            
+
             {members.length > 0 && (
               <div className="space-y-2">
                 <Label>Members</Label>
@@ -184,8 +202,11 @@ const Groups = () => {
                       <span className="ml-1 text-xs">(you)</span>
                     </div>
                   </div>
-                  {members.map(email => (
-                    <div key={email} className="flex items-center justify-between mb-2">
+                  {members.map((email) => (
+                    <div
+                      key={email}
+                      className="flex items-center justify-between mb-2"
+                    >
                       <div className="bg-muted py-1 px-3 rounded-full text-sm">
                         {email}
                       </div>
@@ -203,7 +224,7 @@ const Groups = () => {
               </div>
             )}
           </div>
-          
+
           <DialogFooter>
             <Button onClick={handleCreateGroup}>Create Group</Button>
           </DialogFooter>
