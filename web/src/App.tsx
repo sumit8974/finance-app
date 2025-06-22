@@ -15,6 +15,7 @@ import GroupDetail from "./pages/GroupDetail";
 import ProtectedRoute from "./components/ProtectedRoute";
 import NotFound from "./pages/NotFound";
 import VerifyAccount from "./pages/VerifyAccount";
+import CheckEmail from "./pages/CheckEmail";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +29,7 @@ const App = () => (
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/users/activate/:token" element={<VerifyAccount />} />
+          <Route path="/check-email" element={<CheckEmail />} />
           
           <Route element={<ProtectedRoute />}>
             <Route path="/" element={<Navigate to="/dashboard" replace />} />

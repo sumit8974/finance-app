@@ -13,6 +13,7 @@ export type Transaction = {
   description: string;
   category: string;
   date: Date;
+  createdAt: Date;
   type: TransactionType;
   groupId?: string;
   createdBy: string;
@@ -36,9 +37,14 @@ type TransactionContextType = {
   transactions: Transaction[];
   categories: Categories[];
   groups: TransactionGroup[];
-  addTransaction: (transaction: Omit<Transaction, "id" | "createdBy">) => Promise<void>;
+  addTransaction: (
+    transaction: Omit<Transaction, "id" | "createdBy" | "createdAt" | "groupId">
+  ) => Promise<void>;
   deleteTransaction: (id: string) => Promise<void>;
-  updateTransaction: (id: string, transaction: Partial<Transaction>) => Promise<void>;
+  updateTransaction: (
+    id: string,
+    transaction: Partial<Transaction>
+  ) => Promise<void>;
   getTransactionsByMonth: (month: number, year: number) => Transaction[];
   getGroupTransactions: (groupId: string) => Transaction[];
   getPersonalTransactions: () => Transaction[];
@@ -95,7 +101,8 @@ export const TransactionProvider: React.FC<{ children: React.ReactNode }> = ({
             amount: transaction.amount,
             description: transaction.description,
             category: transaction.categoryName,
-            date: transaction.createdAt,
+            date: transaction.transactionDate,
+            createdAt: transaction.createdAt,
             type: transaction.transactionType,
             groupId: transaction.groupId,
             createdBy: transaction.userId,
@@ -148,14 +155,15 @@ export const TransactionProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // Add new transaction (optimistic)
   const addTransaction = async (
-    transaction: Omit<Transaction, "id" | "createdBy">
+    transaction: Omit<Transaction, "id" | "createdBy" | "createdAt" | "groupId">,
   ) => {
     if (!user) return;
     const tempId = `temp-${Date.now()}`;
     const optimisticTransaction: Transaction = {
       id: tempId,
       createdBy: user.id,
-      date: new Date(),
+      createdAt: new Date(),
+      date: new Date(transaction.date),
       ...transaction,
     };
     setTransactions((prev) => [optimisticTransaction, ...prev]);
@@ -171,12 +179,14 @@ export const TransactionProvider: React.FC<{ children: React.ReactNode }> = ({
         description: transaction.description,
         categoryName: transaction.category,
         transactionType: transaction.type,
+        transactionDate: transaction.date,
       });
 
       const newTransaction: Transaction = {
         id: transactionRes.data.id,
         createdBy: transactionRes.data.userId,
-        date: transactionRes.data.updatedAt,
+        date: transactionRes.data.transactionDate,
+        createdAt: transactionRes.data.createdAt,
         amount: transactionRes.data.amount,
         category: transactionRes.data.categoryName,
         type: transactionRes.data.transactionType,
@@ -226,9 +236,7 @@ export const TransactionProvider: React.FC<{ children: React.ReactNode }> = ({
   ) => {
     const prevTransactions = transactions;
     setTransactions((prev) =>
-      prev.map((t) =>
-        t.id === id ? { ...t, ...transactionData } : t
-      )
+      prev.map((t) => (t.id === id ? { ...t, ...transactionData } : t))
     );
     // Show success toast immediately
     toast({
@@ -241,11 +249,13 @@ export const TransactionProvider: React.FC<{ children: React.ReactNode }> = ({
         description: transactionData.description,
         categoryName: transactionData.category,
         transactionType: transactionData.type,
+        transactionDate: transactionData.date,
       });
       const updatedTransaction: Transaction = {
         id: transactionRes.data.id,
         createdBy: transactionRes.data.userId,
-        date: transactionRes.data.updatedAt,
+        createdAt: transactionRes.data.createdAt,
+        date: transactionRes.data.transactionDate,
         amount: transactionRes.data.amount,
         category: transactionRes.data.categoryName,
         type: transactionRes.data.transactionType,

@@ -29,7 +29,7 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
   onEdit,
 }) => {
   const { deleteTransaction } = useTransactions();
-  const { id, amount, description, category, date, type } = transaction;
+  const { id, amount, description, category, createdAt: date, type } = transaction;
 
   const formattedDate = formatDistanceToNow(new Date(date), {
     addSuffix: true,

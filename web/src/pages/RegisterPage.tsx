@@ -13,6 +13,7 @@ const RegisterPage = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [registrationSuccess, setRegistrationSuccess] = useState(false);
 
   const { register, isAuthenticated } = useAuth();
 
@@ -42,6 +43,7 @@ const RegisterPage = () => {
       }
 
       await register(name, email, password);
+      setRegistrationSuccess(true);
     } catch (error) {
       if (error instanceof Error) {
         setError(error.message);
@@ -49,9 +51,19 @@ const RegisterPage = () => {
         setError("An error occurred during registration");
       }
     } finally {
+      setConfirmPassword("");
+      setName("");
+      setEmail("");
+      setPassword("");
       setIsSubmitting(false);
     }
   };
+
+  if (registrationSuccess) {
+    // Set a session flag before redirecting
+    sessionStorage.setItem("showCheckEmail", "true");
+    return <Navigate to="/check-email" replace />;
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-muted/30">
