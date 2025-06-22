@@ -209,7 +209,7 @@ const Dashboard = () => {
                 <CartesianGrid strokeDasharray="3 3" horizontal={false} />
                 <XAxis type="number" tickFormatter={(value) => `₹${value}`} />
                 <YAxis type="category" dataKey="name" width={100} />
-                <Tooltip formatter={(value) => [`₹${value}`, "Amount"]} />
+                <Tooltip formatter={(value) => [`₹${value}`, "Amount"]} contentStyle={{ color: "#2c2c2c" }} />
                 <Bar dataKey="amount" fill="#F87171" radius={[0, 4, 4, 0]} />
               </BarChart>
             </ResponsiveContainer>
