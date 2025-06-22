@@ -8,6 +8,9 @@ definitions:
         type: string
       description:
         type: string
+      transactionDate:
+        description: Assuming this is a string for simplicity, could be time.Time
+        type: string
       transactionType:
         type: string
     type: object
@@ -58,6 +61,9 @@ definitions:
       categoryName:
         type: string
       description:
+        type: string
+      transactionDate:
+        description: Assuming this is a string for simplicity, could be time.Time
         type: string
       transactionType:
         type: string
@@ -115,6 +121,9 @@ definitions:
         type: string
       id:
         type: integer
+      transactionDate:
+        description: Assuming this is a string for simplicity, could be time.Time
+        type: string
       transactionType:
         type: string
       updatedAt:

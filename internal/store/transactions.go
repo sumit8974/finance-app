@@ -13,6 +13,7 @@ type Transaction struct {
 	CategoryName    string  `json:"categoryName"`
 	CategoryID      int64   `json:"categoryId"`
 	TransactionType string  `json:"transactionType"`
+	TransactionDate string  `json:"transactionDate"` // Assuming this is a string for simplicity, could be time.Time
 	Description     string  `json:"description"`
 	CreatedAt       string  `json:"createdAt"`
 	UpdatedAt       string  `json:"updatedAt"`
@@ -24,9 +25,9 @@ type TransactionStore struct {
 
 func (t *TransactionStore) Create(ctx context.Context, transaction *Transaction) (*Transaction, error) {
 	query := `
-		INSERT INTO individual_transactions (user_id, amount, category_id, transaction_type, description)
-		VALUES ($1, $2, $3, $4, $5)
-		RETURNING id, created_at, updated_at
+		INSERT INTO individual_transactions (user_id, amount, category_id, transaction_type, description, transaction_date)
+		VALUES ($1, $2, $3, $4, $5, $6)
+		RETURNING id, created_at, updated_at, transaction_date
 	`
 	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
 	defer cancel()
@@ -37,7 +38,8 @@ func (t *TransactionStore) Create(ctx context.Context, transaction *Transaction)
 		transaction.CategoryID,
 		transaction.TransactionType,
 		transaction.Description,
-	).Scan(&transaction.ID, &transaction.CreatedAt, &transaction.UpdatedAt)
+		transaction.TransactionDate,
+	).Scan(&transaction.ID, &transaction.CreatedAt, &transaction.UpdatedAt, &transaction.TransactionDate)
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +61,7 @@ type ListTransactionsResponse struct {
 func (t *TransactionStore) ListTransactionsByUser(ctx context.Context, userID int64, filter ListTransactionsByUserFilter) ([]Transaction, error) {
 	// write a join query to get the transactions with category name
 	query := `
-		SELECT t.id, t.user_id, t.amount, c.name as category_name, t.transaction_type, t.description, t.created_at, t.updated_at
+		SELECT t.id, t.user_id, t.amount, c.name as category_name, t.transaction_type, t.description, t.created_at, t.updated_at, t.transaction_date
 		FROM individual_transactions t
 		JOIN categories c ON t.category_id = c.id
 		WHERE t.user_id = $1
@@ -81,7 +83,6 @@ func (t *TransactionStore) ListTransactionsByUser(ctx context.Context, userID in
 
 	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
 	defer cancel()
-	fmt.Println("Executing query:", query, args)
 	rows, err := t.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
@@ -94,7 +95,7 @@ func (t *TransactionStore) ListTransactionsByUser(ctx context.Context, userID in
 		fmt.Println("Scanning transaction row")
 		err := rows.Scan(&transaction.ID, &transaction.UserID, &transaction.Amount,
 			&transaction.CategoryName, &transaction.TransactionType, &transaction.Description, &transaction.CreatedAt,
-			&transaction.UpdatedAt)
+			&transaction.UpdatedAt, &transaction.TransactionDate)
 		if err != nil {
 			return nil, err
 		}
@@ -106,7 +107,7 @@ func (t *TransactionStore) ListTransactionsByUser(ctx context.Context, userID in
 
 func (t *TransactionStore) GetByID(ctx context.Context, transactionID int64) (*Transaction, error) {
 	query := `
-		SELECT id, user_id, amount, category_id, transaction_type, description
+		SELECT id, user_id, amount, category_id, transaction_type, description,created_at, updated_at, transaction_date
 		FROM individual_transactions
 		WHERE id = $1
 	`
@@ -121,6 +122,9 @@ func (t *TransactionStore) GetByID(ctx context.Context, transactionID int64) (*T
 		&transaction.CategoryID,
 		&transaction.TransactionType,
 		&transaction.Description,
+		&transaction.CreatedAt,
+		&transaction.UpdatedAt,
+		&transaction.TransactionDate,
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -157,11 +161,12 @@ func (t *TransactionStore) DeleteByID(ctx context.Context, transactionID int64) 
 }
 
 func (t *TransactionStore) Update(ctx context.Context, transaction *Transaction) error {
+	fmt.Println("Updating transaction:", transaction)
 	query := `
 		UPDATE individual_transactions
-		SET amount = $1, category_id = $2, transaction_type = $3, description = $4, updated_at = NOW()
-		WHERE id = $5 AND user_id = $6
-		RETURNING updated_at
+		SET amount = $1, category_id = $2, transaction_type = $3, description = $4, updated_at = NOW(), transaction_date = $5
+		WHERE id = $6 AND user_id = $7
+		RETURNING updated_at, transaction_date
 	`
 	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
 	defer cancel()
@@ -171,9 +176,11 @@ func (t *TransactionStore) Update(ctx context.Context, transaction *Transaction)
 		transaction.CategoryID,
 		transaction.TransactionType,
 		transaction.Description,
+		transaction.TransactionDate,
 		transaction.ID,
 		transaction.UserID,
-	).Scan(&transaction.UpdatedAt)
+
+	).Scan(&transaction.UpdatedAt, &transaction.TransactionDate)
 	if err != nil {
 		switch {
 		case err == sql.ErrNoRows:

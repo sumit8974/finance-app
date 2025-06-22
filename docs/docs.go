@@ -514,6 +514,10 @@ const docTemplate = `{
                 "description": {
                     "type": "string"
                 },
+                "transactionDate": {
+                    "description": "Assuming this is a string for simplicity, could be time.Time",
+                    "type": "string"
+                },
                 "transactionType": {
                     "type": "string"
                 }
@@ -586,6 +590,10 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "description": {
+                    "type": "string"
+                },
+                "transactionDate": {
+                    "description": "Assuming this is a string for simplicity, could be time.Time",
                     "type": "string"
                 },
                 "transactionType": {
@@ -673,6 +681,10 @@ const docTemplate = `{
                 },
                 "id": {
                     "type": "integer"
+                },
+                "transactionDate": {
+                    "description": "Assuming this is a string for simplicity, could be time.Time",
+                    "type": "string"
                 },
                 "transactionType": {
                     "type": "string"

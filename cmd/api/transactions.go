@@ -16,6 +16,7 @@ type CreateTransactionRequest struct {
 	TransactionType string  `json:"transactionType"`
 	Description     string  `json:"description"`
 	CategoryName    string  `json:"categoryName"`
+	TransactionDate string  `json:"transactionDate"` // Assuming this is a string for simplicity, could be time.Time
 }
 
 // createTransactionHandler godoc
@@ -46,7 +47,12 @@ func (app *application) createTransactionHandler(w http.ResponseWriter, r *http.
 	}
 
 	user := getUserFromContext(r)
-
+	parsedTime, err := time.Parse(time.RFC3339, payload.TransactionDate) // Set current time as transaction date
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+	payload.TransactionDate = parsedTime.Format(time.RFC3339) // Convert to date-only format
 	// TODO: Try to get the category id using the category name from the database
 	ctx := r.Context()
 	categoryDetails, err := app.store.Category.GetByName(ctx, payload.CategoryName)
@@ -70,6 +76,7 @@ func (app *application) createTransactionHandler(w http.ResponseWriter, r *http.
 		Description:     payload.Description,
 		CategoryID:      categoryDetails.ID,
 		CategoryName:    categoryDetails.Name,
+		TransactionDate: payload.TransactionDate,
 	}
 
 	transactionData, err := app.store.Transactions.Create(ctx, transaction)
@@ -262,6 +269,12 @@ func (app *application) updateTransactionByIDHandler(w http.ResponseWriter, r *h
 	transaction.TransactionType = payload.TransactionType
 	transaction.Description = payload.Description
 	transaction.CategoryID = categoryDetails.ID
+	parsedTime, err := time.Parse(time.RFC3339, payload.TransactionDate) // Set current time as transaction date
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+	transaction.TransactionDate = parsedTime.Format(time.RFC3339)
 	err = app.store.Transactions.Update(ctx, transaction)
 	if err != nil {
 		app.internalServerError(w, r, err)
