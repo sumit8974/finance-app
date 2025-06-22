@@ -61,9 +61,9 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
         <div className="flex items-center">
           <div className={`flex items-center font-medium text-lg ${type === 'expense' ? 'text-expense' : 'text-income'}`}>
             {type === 'expense' ? (
-              <ArrowUpRight className="h-4 w-4 mr-1" />
-            ) : (
               <ArrowDownRight className="h-4 w-4 mr-1" />
+            ) : (
+              <ArrowUpRight className="h-4 w-4 mr-1" />
             )}
             ₹{amount.toFixed(2)}
           </div>

@@ -36,9 +36,9 @@ type TransactionContextType = {
   transactions: Transaction[];
   categories: Categories[];
   groups: TransactionGroup[];
-  addTransaction: (transaction: Omit<Transaction, "id" | "createdBy">) => void;
-  deleteTransaction: (id: string) => void;
-  updateTransaction: (id: string, transaction: Partial<Transaction>) => void;
+  addTransaction: (transaction: Omit<Transaction, "id" | "createdBy">) => Promise<void>;
+  deleteTransaction: (id: string) => Promise<void>;
+  updateTransaction: (id: string, transaction: Partial<Transaction>) => Promise<void>;
   getTransactionsByMonth: (month: number, year: number) => Transaction[];
   getGroupTransactions: (groupId: string) => Transaction[];
   getPersonalTransactions: () => Transaction[];
@@ -46,17 +46,16 @@ type TransactionContextType = {
   updateGroup: (id: string, data: Partial<TransactionGroup>) => void;
   deleteGroup: (id: string) => void;
   getGroupById: (id: string) => TransactionGroup | undefined;
-  loading: boolean;
+  isLoading: boolean;
 };
 
-// Create context with default values
 const TransactionContext = createContext<TransactionContextType>({
   transactions: [],
   categories: [],
   groups: [],
-  addTransaction: () => {},
-  deleteTransaction: () => {},
-  updateTransaction: () => {},
+  addTransaction: async () => {},
+  deleteTransaction: async () => {},
+  updateTransaction: async () => {},
   getTransactionsByMonth: () => [],
   getGroupTransactions: () => [],
   getPersonalTransactions: () => [],
@@ -64,61 +63,10 @@ const TransactionContext = createContext<TransactionContextType>({
   updateGroup: () => {},
   deleteGroup: () => {},
   getGroupById: () => undefined,
-  loading: true,
+  isLoading: false,
 });
 
 export const useTransactions = () => useContext(TransactionContext);
-
-// Sample data for initial state
-// const sampleCategories = {
-//   expense: ['Food', 'Transportation', 'Housing', 'Entertainment', 'Utilities', 'Healthcare', 'Shopping', 'Other'],
-//   income: ['Salary', 'Bonus', 'Gifts', 'Investments', 'Side Hustle', 'Other']
-// };
-
-// Function to generate sample transactions
-// const generateSampleTransactions = (userId: string): Transaction[] => {
-//   const currentDate = new Date();
-//   const transactions: Transaction[] = [];
-
-//   // Generate transactions for the past 3 months
-//   for (let i = 0; i < 30; i++) {
-//     const date = new Date();
-//     date.setDate(currentDate.getDate() - Math.floor(Math.random() * 90)); // Random date within past 3 months
-
-//     const type: TransactionType = Math.random() > 0.7 ? 'income' : 'expense';
-//     const categories = sampleCategories[type];
-
-//     transactions.push({
-//       id: `trans-${i}`,
-//       amount: Math.round(Math.random() * 1000) + 10,
-//       description: `Sample ${type}`,
-//       category: categories[Math.floor(Math.random() * categories.length)],
-//       date: date,
-//       type,
-//       createdBy: userId,
-//     });
-//   }
-
-//   return transactions;
-// };
-
-// Generate sample groups
-const generateSampleGroups = (userId: string): TransactionGroup[] => {
-  return [
-    {
-      id: "group-1",
-      name: "Family",
-      members: [userId, "user-2", "user-3"],
-      createdBy: userId,
-    },
-    {
-      id: "group-2",
-      name: "Roommates",
-      members: [userId, "user-4"],
-      createdBy: userId,
-    },
-  ];
-};
 
 export const TransactionProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -126,19 +74,19 @@ export const TransactionProvider: React.FC<{ children: React.ReactNode }> = ({
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [categories, setCategories] = useState<Categories[]>([]);
   const [groups, setGroups] = useState<TransactionGroup[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const { user } = useAuth();
 
-  // Load saved transactions and groups on mount or when user changes
+  // Load transactions
   useEffect(() => {
     const loadTransactions = async () => {
       if (!user) return;
       if (!getToken()) return;
       try {
-        setLoading(true);
+        setIsLoading(true);
         const loadedTransactions = await api.get(`/transactions`);
         if (!loadedTransactions.data) {
-          setLoading(false);
+          setIsLoading(false);
           return;
         }
         const transactions: Transaction[] = loadedTransactions.data.map(
@@ -154,16 +102,15 @@ export const TransactionProvider: React.FC<{ children: React.ReactNode }> = ({
           })
         );
         setTransactions(transactions);
-        setLoading(false);
+        setIsLoading(false);
       } catch (error) {
+        setIsLoading(false);
         toast({
           title: "Error loading transactions",
           description: error.message,
           variant: "destructive",
         });
-        setLoading(false);
         console.error("Failed to load transactions", error);
-        // setTransactions([]);
       }
     };
     loadTransactions();
@@ -175,7 +122,7 @@ export const TransactionProvider: React.FC<{ children: React.ReactNode }> = ({
       try {
         if (!user) return;
         if (!getToken()) return;
-        setLoading(true);
+        setIsLoading(true);
         const loadedCategories = await api.get("/categories");
         const categories: Categories[] = loadedCategories.data.map(
           (category: any) => ({
@@ -185,26 +132,39 @@ export const TransactionProvider: React.FC<{ children: React.ReactNode }> = ({
           })
         );
         setCategories(categories);
-        setLoading(false);
+        setIsLoading(false);
       } catch (error) {
         toast({
           title: "Error loading categories",
           description: error.message,
           variant: "destructive",
         });
-        setLoading(false);
+        setIsLoading(false);
         console.error("Failed to load categories", error);
       }
     };
     loadCategories();
   }, [user]);
 
-  // Add new transaction
+  // Add new transaction (optimistic)
   const addTransaction = async (
     transaction: Omit<Transaction, "id" | "createdBy">
   ) => {
     if (!user) return;
-    console.log("transaction", transaction);
+    const tempId = `temp-${Date.now()}`;
+    const optimisticTransaction: Transaction = {
+      id: tempId,
+      createdBy: user.id,
+      date: new Date(),
+      ...transaction,
+    };
+    setTransactions((prev) => [optimisticTransaction, ...prev]);
+    // Show success toast immediately
+    toast({
+      title: `${transaction.type === "expense" ? "Expense" : "Income"} added`,
+      description: `${transaction.description} - ₹${transaction.amount}`,
+    });
+
     try {
       const transactionRes = await api.post("/transactions", {
         amount: transaction.amount,
@@ -212,7 +172,6 @@ export const TransactionProvider: React.FC<{ children: React.ReactNode }> = ({
         categoryName: transaction.category,
         transactionType: transaction.type,
       });
-      console.log("transactionRes", transactionRes);
 
       const newTransaction: Transaction = {
         id: transactionRes.data.id,
@@ -224,50 +183,58 @@ export const TransactionProvider: React.FC<{ children: React.ReactNode }> = ({
         description: transactionRes.data.description,
         groupId: transactionRes.data?.groupId,
       };
-      console.log("newTransaction", newTransaction);
-      setTransactions((prev) => [newTransaction, ...prev]);
-      toast({
-        title: `${transaction.type === "expense" ? "Expense" : "Income"} added`,
-        description: `${transaction.description} - ₹${transaction.amount}`,
-      });
+      setTransactions((prev) =>
+        prev.map((t) => (t.id === tempId ? newTransaction : t))
+      );
+      // Do NOT show another toast here
     } catch (error) {
+      setTransactions((prev) => prev.filter((t) => t.id !== tempId));
       toast({
         title: "Error adding transaction",
-        description: error.response.data.error,
+        description: error.response?.data?.error || "An error occurred",
         variant: "destructive",
       });
-      return;
     }
   };
 
-  // Delete transaction
+  // Delete transaction (optimistic)
   const deleteTransaction = async (id: string) => {
-    try {
-      await api.delete(`/transactions/${id}`);
-      setTransactions((prev) => prev.filter((t) => t.id !== id));
-      toast({
-        title: "Transaction deleted",
-        description: "The transaction has been deleted successfully",
-      });
-    } catch (error) {
-      toast({
-        title: "Error deleting transaction",
-        description: error.response.data.error,
-        variant: "destructive",
-      });
-      return;
-    }
-
+    const prevTransactions = transactions;
+    setTransactions((prev) => prev.filter((t) => t.id !== id));
+    // Show success toast immediately
     toast({
       title: "Transaction deleted",
+      description: "The transaction has been deleted successfully",
     });
+    try {
+      await api.delete(`/transactions/${id}`);
+      // Do NOT show another toast here
+    } catch (error) {
+      setTransactions(prevTransactions);
+      toast({
+        title: "Error deleting transaction",
+        description: error.response?.data?.error || "An error occurred",
+        variant: "destructive",
+      });
+    }
   };
 
-  // Update transaction
+  // Update transaction (optimistic)
   const updateTransaction = async (
     id: string,
     transactionData: Partial<Transaction>
   ) => {
+    const prevTransactions = transactions;
+    setTransactions((prev) =>
+      prev.map((t) =>
+        t.id === id ? { ...t, ...transactionData } : t
+      )
+    );
+    // Show success toast immediately
+    toast({
+      title: "Transaction updated",
+      description: `${transactionData.description} - ₹${transactionData.amount}`,
+    });
     try {
       const transactionRes = await api.patch(`/transactions/${id}`, {
         amount: transactionData.amount,
@@ -285,33 +252,24 @@ export const TransactionProvider: React.FC<{ children: React.ReactNode }> = ({
         description: transactionRes.data.description,
         groupId: transactionRes.data?.groupId,
       };
-      console.log("updatedTransaction", updatedTransaction);
-      console.log("transactions", transactions);
       setTransactions((prev) =>
         prev.map((t) =>
           t.id === updatedTransaction.id ? { ...updatedTransaction } : t
         )
       );
-      // setTransactions((prev) => [updatedTransaction, ...prev]);
-
-      console.log("transactions2", transactions);
-      toast({
-        title: "Transaction updated",
-        description: `${transactionData.description} - ₹${transactionData.amount}`,
-      });
+      // Do NOT show another toast here
     } catch (error) {
+      setTransactions(prevTransactions);
       toast({
         title: "Error updating transaction",
-        description: error.response.data.error,
+        description: error.response?.data?.error || "An error occurred",
         variant: "destructive",
       });
-      return;
     }
   };
 
   // Get transactions by month
   const getTransactionsByMonth = (month: number, year: number) => {
-
     return transactions.filter((t) => {
       const transactionDate = new Date(t.date);
       return (
@@ -394,7 +352,7 @@ export const TransactionProvider: React.FC<{ children: React.ReactNode }> = ({
     updateGroup,
     deleteGroup,
     getGroupById,
-    loading,
+    isLoading,
   };
 
   return (

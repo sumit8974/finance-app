@@ -3,7 +3,6 @@ import { useState, useMemo } from 'react';
 import { useTransactions } from '@/context/TransactionContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Label } from 'recharts';
-import { Button } from "@/components/ui/button";
 import { format, subMonths, startOfMonth, addDays, getMonth, getYear } from 'date-fns';
 import MonthPicker from '@/components/MonthPicker';
 import TabView from '@/components/TabView';
