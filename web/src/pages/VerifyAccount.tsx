@@ -4,12 +4,14 @@ import api from "@/api/axios";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import Spinner from "@/components/Spinner";
+import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 
 const VerifyAccount = () => {
   const [loading, setLoading] = useState(false);
   const [verifyingToken, setVerifyingToken] = useState(false);
   const navigate = useNavigate();
   const { token } = useParams();
+
   const verifyAccount = async () => {
     setLoading(true);
     try {
@@ -56,16 +58,41 @@ const VerifyAccount = () => {
       </div>
     );
   }
+
   return (
-    <div className="flex justify-center items-center h-screen">
-      <div className="bg-zinc-900 shadow-2xl rounded-2xl p-10 max-w-md w-full flex flex-col items-center border border-zinc-800">
-        <h1 className="text-3xl font-extrabold mb-2 text-indigo-400 text-center">
+    <div className="flex justify-center items-center h-screen bg-gray-100 dark:bg-black transition-colors">
+      <div
+        className="
+        w-full max-w-md p-10 rounded-2xl shadow-2xl flex flex-col items-center border
+        bg-white border-zinc-200
+        dark:bg-zinc-900 dark:border-zinc-800
+        transition-colors
+      "
+      >
+        <h1
+          className="
+          text-3xl font-extrabold mb-2 text-indigo-600 text-center
+          dark:text-indigo-400
+        "
+        >
           Welcome to FinTracker!
         </h1>
-        <p className="text-zinc-200 mb-4 text-center">
+        <p
+          className="
+          text-zinc-700 mb-4 text-center
+          dark:text-zinc-200
+        "
+        >
           Your journey to smarter financial management starts here.
         </p>
-        <div className="bg-indigo-950 bg-opacity-70 rounded-lg p-4 mb-6 text-indigo-200 text-center text-sm">
+        <div
+          className="
+          bg-indigo-100 text-indigo-700
+          dark:bg-indigo-950 dark:bg-opacity-70 dark:text-indigo-200
+          rounded-lg p-4 mb-6 text-center text-sm
+          transition-colors
+        "
+        >
           To complete your registration, please verify your account by clicking
           the button below.
           <br />
@@ -74,7 +101,11 @@ const VerifyAccount = () => {
         <Button
           onClick={verifyAccount}
           disabled={loading}
-          className="w-full py-2 text-lg font-semibold bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition"
+          className="
+            w-full py-2 text-lg font-semibold rounded-lg transition
+            bg-indigo-600 hover:bg-indigo-700 text-white
+            dark:bg-indigo-600 dark:hover:bg-indigo-700
+          "
         >
           {loading ? (
             <>
@@ -85,6 +116,9 @@ const VerifyAccount = () => {
             <>Activate Account</>
           )}
         </Button>
+      </div>
+      <div className="absolute top-4 right-4">
+        <ThemeSwitcher />
       </div>
     </div>
   );
