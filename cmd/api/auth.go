@@ -222,6 +222,7 @@ func (app *application) validateUserInvitationTokenHandler(w http.ResponseWriter
 	token := chi.URLParam(r, "token")
 	if token == "" {
 		app.badRequestResponse(w, r, errors.New("token is required"))
+		return
 	}
 	valid, err := app.store.Token.Validate(token)
 	if err != nil {
