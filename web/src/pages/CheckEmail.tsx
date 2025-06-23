@@ -7,14 +7,14 @@ const CheckEmail = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-  const allowed = sessionStorage.getItem("showCheckEmail");
-  if (!allowed) {
-  navigate("/register", { replace: true });
-  } else {
-  // Remove the flag immediately so it can't be reused
-  sessionStorage.removeItem("showCheckEmail");
-  }
-}, [navigate]);
+    const allowed = sessionStorage.getItem("showCheckEmail");
+    if (!allowed) {
+      navigate("/register", { replace: true });
+    } else {
+      // Remove the flag immediately so it can't be reused
+      sessionStorage.removeItem("showCheckEmail");
+    }
+  }, [navigate]);
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 bg-muted/30">

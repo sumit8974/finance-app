@@ -8,7 +8,7 @@ import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 
 const VerifyAccount = () => {
   const [loading, setLoading] = useState(false);
-  const [verifyingToken, setVerifyingToken] = useState(false);
+  const [verifyingToken, setVerifyingToken] = useState(true);
   const navigate = useNavigate();
   const { token } = useParams();
 
@@ -34,7 +34,6 @@ const VerifyAccount = () => {
 
   useEffect(() => {
     const validateToken = async () => {
-      setVerifyingToken(true);
       try {
         await api.get(`/auth/validate-invitation-token/${token}`);
       } catch (error) {

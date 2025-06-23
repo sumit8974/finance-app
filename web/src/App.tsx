@@ -16,6 +16,8 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import NotFound from "./pages/NotFound";
 import VerifyAccount from "./pages/VerifyAccount";
 import CheckEmail from "./pages/CheckEmail";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 
 const queryClient = new QueryClient();
 
@@ -30,7 +32,12 @@ const App = () => (
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/users/activate/:token" element={<VerifyAccount />} />
           <Route path="/check-email" element={<CheckEmail />} />
-          
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route
+            path="/reset-password/:token"
+            element={<ResetPasswordPage />}
+          />
+
           <Route element={<ProtectedRoute />}>
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="/dashboard" element={<Dashboard />} />
@@ -39,7 +46,7 @@ const App = () => (
             <Route path="/groups" element={<Groups />} />
             <Route path="/groups/:id" element={<GroupDetail />} />
           </Route>
-          
+
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
