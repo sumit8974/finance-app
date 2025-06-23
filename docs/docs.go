@@ -112,6 +112,46 @@ const docTemplate = `{
                 }
             }
         },
+        "/auth/validate-invitation-token/{token}": {
+            "get": {
+                "description": "Validate user invitation token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Validate user invitation token",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User invitation token",
+                        "name": "token",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "valid token",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            }
+        },
         "/categories": {
             "get": {
                 "security": [

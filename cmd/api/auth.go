@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/sumit8974/finance-tracker/internal/mail"
@@ -203,4 +204,39 @@ func (app *application) loginUserHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	app.logger.Infow("user logged in", "user", user.ID, "email", user.Email)
+}
+
+// valudateUserInvitationTokenHandler godoc
+//
+//	@Summary		Validate user invitation token
+//	@Description	Validate user invitation token
+//	@Tags			auth
+//	@Accept			json
+//	@Produce		json
+//	@Param			token	path		string	true	"User invitation token"
+//	@Success		200		{string}	string	"valid token"
+//	@Failure		400		{object}	error
+//	@Failure		500		{object}	error
+//	@Router			/auth/validate-invitation-token/{token} [get]
+func (app *application) validateUserInvitationTokenHandler(w http.ResponseWriter, r *http.Request) {
+	token := chi.URLParam(r, "token")
+	if token == "" { 
+		app.badRequestResponse(w, r, errors.New("token is required"))
+	}
+	valid, err := app.store.Token.Validate(token)
+	if err != nil {
+		app.logger.Errorw("failed to validate token", "error", err)
+		app.internalServerError(w, r, err)
+		return
+	}
+	if !valid {
+		app.logger.Errorw("invalid token", "token", token)
+		app.badRequestResponse(w, r, errors.New("invalid token"))
+		return
+	}
+	app.logger.Infow("token is valid", "token", token)
+	if err := app.jsonResponse(w, http.StatusOK, "valid token"); err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
 }

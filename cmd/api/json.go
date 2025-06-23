@@ -47,7 +47,7 @@ func (app *application) jsonResponse(w http.ResponseWriter, status int, data any
 	// type envelope struct {
 	// 	Data any `json:"data"`
 	// }
-	if data == nil {
+	if data == nil || data == "" {
 		return writeJSONWithoutBody(w, status)
 	}
 	return writeJSON(w, status, data)

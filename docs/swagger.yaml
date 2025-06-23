@@ -219,6 +219,33 @@ paths:
       summary: Register a new user
       tags:
       - auth
+  /auth/validate-invitation-token/{token}:
+    get:
+      consumes:
+      - application/json
+      description: Validate user invitation token
+      parameters:
+      - description: User invitation token
+        in: path
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: valid token
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Validate user invitation token
+      tags:
+      - auth
   /categories:
     get:
       consumes:

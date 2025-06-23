@@ -35,6 +35,9 @@ type Storage struct {
 		GetByName(context.Context, string) (*Category, error)
 		ListCategories(ctx context.Context) ([]*Category, error)
 	}
+	Token interface {
+		Validate(token string) (bool, error)
+	}
 }
 
 func NewStorage(db *sql.DB) Storage {
@@ -42,6 +45,7 @@ func NewStorage(db *sql.DB) Storage {
 		Users:     &UserStore{db},
 		Transactions: &TransactionStore{db: db},
 		Category:  &CategoryStore{db: db},
+		Token:     &Token{db: db},
 	}
 }
 
