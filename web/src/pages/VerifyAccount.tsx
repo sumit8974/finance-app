@@ -1,11 +1,13 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "../components/ui/button";
 import api from "@/api/axios";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
+import Spinner from "@/components/Spinner";
 
 const VerifyAccount = () => {
   const [loading, setLoading] = useState(false);
+  const [verifyingToken, setVerifyingToken] = useState(false);
   const navigate = useNavigate();
   const { token } = useParams();
   const verifyAccount = async () => {
@@ -28,6 +30,32 @@ const VerifyAccount = () => {
     }
   };
 
+  useEffect(() => {
+    const validateToken = async () => {
+      setVerifyingToken(true);
+      try {
+        await api.get(`/auth/validate-invitation-token/${token}`);
+      } catch (error) {
+        toast({
+          title: "An error occurred",
+          description: error.response?.data?.error || "Please try again later",
+          variant: "destructive",
+        });
+        navigate("/login", { replace: true });
+      } finally {
+        setVerifyingToken(false);
+      }
+    };
+    validateToken();
+  }, []);
+
+  if (verifyingToken) {
+    return (
+      <div className="flex justify-center items-center min-h-[85vh]">
+        <Spinner className="h-10 w-10 mx-auto mt-20" />
+      </div>
+    );
+  }
   return (
     <div className="flex justify-center items-center h-screen">
       <div className="bg-zinc-900 shadow-2xl rounded-2xl p-10 max-w-md w-full flex flex-col items-center border border-zinc-800">
