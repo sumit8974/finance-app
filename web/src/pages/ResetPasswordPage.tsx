@@ -58,6 +58,8 @@ const ResetPasswordPage = () => {
       });
       return;
     } finally {
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("user");
       setResettingPassword(false);
     }
     toast({

@@ -6,7 +6,6 @@ import { Link } from "react-router-dom";
 import api from "@/api/axios";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { toast } from "@/hooks/use-toast";
-import { set } from "date-fns";
 
 const ForgotPasswordPage = () => {
   const [email, setEmail] = useState("");
