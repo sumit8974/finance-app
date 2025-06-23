@@ -150,7 +150,6 @@ func (app *application) listTransactionsHandler(w http.ResponseWriter, r *http.R
 		app.internalServerError(w, r, err)
 		return
 	}
-	fmt.Println("transaction", transactions)
 	err = app.jsonResponse(w, http.StatusOK, transactions)
 	if err != nil {
 		app.internalServerError(w, r, err)
@@ -260,7 +259,6 @@ func (app *application) updateTransactionByIDHandler(w http.ResponseWriter, r *h
 			app.badRequestResponse(w, r, fmt.Errorf("category not found"))
 			return
 		}
-		fmt.Println("error", err)
 		app.internalServerError(w, r, err)
 		return
 	}

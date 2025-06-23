@@ -281,7 +281,9 @@ func (s *UserStore) GetByEmail(ctx context.Context, email string) (*User, error)
 	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
 	defer cancel()
 
-	user := &User{}
+	user := &User{
+		IsActive: true, // default to active
+	}
 	err := s.db.QueryRowContext(ctx, query, email).Scan(
 		&user.ID,
 		&user.Username,
@@ -299,4 +301,138 @@ func (s *UserStore) GetByEmail(ctx context.Context, email string) (*User, error)
 	}
 
 	return user, nil
+}
+
+func (s *UserStore) CreateUserResetPasswordToken(ctx context.Context, userID int64, token string, exp time.Duration) error {
+	query := `INSERT INTO reset_password (user_id, token, expires_at) VALUES ($1, $2, $3)`
+
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
+
+	_, err := s.db.ExecContext(ctx, query, userID, token, time.Now().Add(exp))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *UserStore) DeleteUserResetPasswordToken(ctx context.Context, token string) error {
+	query := `DELETE FROM reset_password WHERE token = $1`
+
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
+
+	_, err := s.db.ExecContext(ctx, query, token)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// get the number of reset password token generated for a user in last 10 minutes
+func (s *UserStore) GetUserResetPasswordTokenCount(ctx context.Context, userID int64) (int64, error) {
+	query := `
+		SELECT COUNT(*) FROM reset_password
+		WHERE user_id = $1 AND sent_at > NOW() - interval '10 minutes'
+	`
+
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
+
+	var count int64
+	err := s.db.QueryRowContext(ctx, query, userID).Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
+func (s *UserStore) getUserWithResetToken(ctx context.Context, tx *sql.Tx, token string) (*User, error) {
+	query := `
+		SELECT u.id, u.username, u.email, u.created_at
+		FROM users u
+		JOIN reset_password rp ON u.id = rp.user_id
+		WHERE rp.token = $1 AND rp.expires_at > $2
+	`
+
+	hash := sha256.Sum256([]byte(token))
+	hashToken := hex.EncodeToString(hash[:])
+
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
+
+	user := &User{}
+	err := tx.QueryRowContext(ctx, query, hashToken, time.Now()).Scan(
+		&user.ID,
+		&user.Username,
+		&user.Email,
+		&user.CreatedAt,
+	)
+	if err != nil {
+		switch err {
+		case sql.ErrNoRows:
+			return nil, ErrNotFound
+		default:
+			return nil, err
+		}
+	}
+
+	return user, nil
+}
+
+func (s *UserStore) updatePassword(ctx context.Context, tx *sql.Tx, userID int64, newPassword []byte) error {
+	query := `UPDATE users SET password = $1 WHERE id = $2`
+
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
+
+	_, err := tx.ExecContext(ctx, query, newPassword, userID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *UserStore) ResetPassword(ctx context.Context, token string, newPassword string) error {
+	return withTx(s.db, ctx, func(tx *sql.Tx) error {
+		// 1. find the user that this token belongs to
+		user, err := s.getUserWithResetToken(ctx, tx, token)
+		if err != nil {
+			return err
+		}
+		if err := user.Password.Set(newPassword); err != nil {
+			return err
+		}
+		// 2. update the user's password
+		if err := s.updatePassword(ctx, tx, user.ID, user.Password.hash); err != nil {
+			return err
+		}
+		// 3. make is_active false
+		if err := s.updateTokenActiveStatus(ctx, tx, token, false); err != nil {
+			return err
+		}
+		return nil
+	})
+}
+
+func (s *UserStore) updateTokenActiveStatus(ctx context.Context, tx *sql.Tx, token string, isActive bool) error {
+	query := `UPDATE reset_password SET is_active = $1 WHERE token = $2`
+	hash := sha256.Sum256([]byte(token))
+	hashToken := hex.EncodeToString(hash[:])
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
+	active := "true"
+	if !isActive {
+		active = "false"
+	}
+	_, err := tx.ExecContext(ctx, query, active, hashToken)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

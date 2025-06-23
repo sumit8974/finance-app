@@ -63,6 +63,7 @@ type mailConfig struct {
 	sendGrid  sendGridConfig
 	mailTrap  mailTrapConfig
 	fromEmail string
+	maxResetPasswordRequests int
 	exp       time.Duration
 }
 
@@ -145,6 +146,9 @@ func (app *application) mount() http.Handler {
 			r.Post("/register", app.registerUserHandler)
 			r.Post("/login", app.loginUserHandler)
 			r.Get("/validate-invitation-token/{token}", app.validateUserInvitationTokenHandler)
+			r.Post("/forgot-password", app.forgotPasswordHandler)
+			r.Get("/validate-reset-token/{token}", app.validateResetPasswordTokenHandler)
+			r.Put("/reset-password", app.resetPasswordHandler)
 		})
 	})
 

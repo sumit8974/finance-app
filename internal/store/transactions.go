@@ -3,7 +3,6 @@ package store
 import (
 	"context"
 	"database/sql"
-	"fmt"
 )
 
 type Transaction struct {
@@ -92,7 +91,6 @@ func (t *TransactionStore) ListTransactionsByUser(ctx context.Context, userID in
 	var transactions []Transaction
 	for rows.Next() {
 		transaction := &Transaction{}
-		fmt.Println("Scanning transaction row")
 		err := rows.Scan(&transaction.ID, &transaction.UserID, &transaction.Amount,
 			&transaction.CategoryName, &transaction.TransactionType, &transaction.Description, &transaction.CreatedAt,
 			&transaction.UpdatedAt, &transaction.TransactionDate)
@@ -161,7 +159,6 @@ func (t *TransactionStore) DeleteByID(ctx context.Context, transactionID int64) 
 }
 
 func (t *TransactionStore) Update(ctx context.Context, transaction *Transaction) error {
-	fmt.Println("Updating transaction:", transaction)
 	query := `
 		UPDATE individual_transactions
 		SET amount = $1, category_id = $2, transaction_type = $3, description = $4, updated_at = NOW(), transaction_date = $5
@@ -179,7 +176,6 @@ func (t *TransactionStore) Update(ctx context.Context, transaction *Transaction)
 		transaction.TransactionDate,
 		transaction.ID,
 		transaction.UserID,
-
 	).Scan(&transaction.UpdatedAt, &transaction.TransactionDate)
 	if err != nil {
 		switch {

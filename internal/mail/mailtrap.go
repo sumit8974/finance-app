@@ -33,7 +33,7 @@ func (m mailtrapClient) Send(templateFile, username, email string, data any, isS
 		return 200, nil
 	}
 	// Template parsing and building
-	subject, body, err := m.parser.Parse(data)
+	subject, body, err := m.parser.Parse(data, templateFile)
 	if err != nil {
 		return -1, err
 	}

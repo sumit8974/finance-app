@@ -1,0 +1,1 @@
+ALTER TABLE reset_password DROP COLUMN is_active;

@@ -1,0 +1,1 @@
+ALTER TABLE reset_password ADD COLUMN is_active BOOLEAN DEFAULT TRUE;

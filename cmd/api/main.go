@@ -45,7 +45,7 @@ func main() {
 	cfg := config{
 		addr:        env.GetString("ADDR", ":8000"),
 		apiURL:      env.GetString("EXTERNAL_URL", "localhost:8000"),
-		frontendURL: env.GetString("FRONTEND_URL", "http://localhost:5173"),
+		frontendURL: env.GetString("FRONTEND_URL", "http://localhost:8081"),
 		db: dbConfig{
 			addr:         env.GetString("DB_ADDR", "postgres://postgres:postgres@localhost/finance-app?sslmode=disable"),
 			maxOpenConns: env.GetInt("DB_MAX_OPEN_CONNS", 30),
@@ -62,6 +62,7 @@ func main() {
 		mail: mailConfig{
 			exp:       time.Hour * 24 * 3, // 3 days
 			fromEmail: env.GetString("FROM_EMAIL", ""),
+			maxResetPasswordRequests: env.GetInt("MAX_RESET_PASSWORD_REQUESTS", 3),
 			sendGrid: sendGridConfig{
 				apiKey: env.GetString("SENDGRID_API_KEY", ""),
 			},

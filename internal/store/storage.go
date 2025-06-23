@@ -21,6 +21,10 @@ type Storage struct {
 		CreateAndInvite(ctx context.Context, user *User, token string, exp time.Duration) error
 		Activate(context.Context, string) error
 		Delete(context.Context, int64) error
+		CreateUserResetPasswordToken(ctx context.Context, userID int64, token string, exp time.Duration) error
+		DeleteUserResetPasswordToken(ctx context.Context, token string) error
+		GetUserResetPasswordTokenCount(ctx context.Context, userID int64) (int64, error)
+		ResetPassword(ctx context.Context, token string, newPassword string) error
 	}
 	Transactions interface {
 		Create(context.Context, *Transaction) (*Transaction, error)
@@ -37,6 +41,7 @@ type Storage struct {
 	}
 	Token interface {
 		Validate(token string) (bool, error)
+		ValidateResetPasswordToken(token string) (bool, error)
 	}
 }
 

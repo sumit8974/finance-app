@@ -6,11 +6,11 @@ import (
 	"text/template"
 )
 
-
 const (
-	FromName = "FinTracker"
-	maxRetires = 3
-    UserWelcomeTemplate = "user_invitation.tmpl"
+	FromName              = "FinTracker"
+	maxRetires            = 3
+	UserWelcomeTemplate   = "user_invitation.tmpl"
+	PasswordResetTemplate = "reset_password.tmpl"
 )
 
 //go:embed "templates"
@@ -21,17 +21,16 @@ type MailerClient interface {
 }
 
 type TemplateParser interface {
-	Parse(data any) (*bytes.Buffer, * bytes.Buffer, error)
+	Parse(data any, fileName string) (*bytes.Buffer, *bytes.Buffer, error)
 }
-
 
 type HtmlParser struct {
 	FileName string
 }
 
-func (tp *HtmlParser) Parse(data any) (*bytes.Buffer, * bytes.Buffer, error) {
+func (tp *HtmlParser) Parse(data any, fileName string) (*bytes.Buffer, *bytes.Buffer, error) {
 	// Template parsing and building
-	tmpl, err := template.ParseFS(FS, "templates/"+tp.FileName)
+	tmpl, err := template.ParseFS(FS, "templates/"+fileName)
 	if err != nil {
 		return nil, nil, err
 	}
