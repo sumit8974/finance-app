@@ -19,7 +19,7 @@ const ForgotPasswordPage = () => {
       await api.post("/auth/forgot-password", { email });
       toast({
         title: "Reset link sent",
-        description: "If the email exists, a reset link has been sent.",
+        description: "If an account with that email exists, a reset link has been sent.",
         variant: "default",
       });
     } catch (err: any) {
