@@ -25,8 +25,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Link } from "react-router-dom";
-import { Loader2 } from "lucide-react"; // Add this import for a spinner icon
-import Skeleton from "@/components/Skeleton";
 import Spinner from "@/components/Spinner";
 
 const Dashboard = () => {
@@ -209,7 +207,10 @@ const Dashboard = () => {
                 <CartesianGrid strokeDasharray="3 3" horizontal={false} />
                 <XAxis type="number" tickFormatter={(value) => `₹${value}`} />
                 <YAxis type="category" dataKey="name" width={100} />
-                <Tooltip formatter={(value) => [`₹${value}`, "Amount"]} contentStyle={{ color: "#2c2c2c" }} />
+                <Tooltip
+                  formatter={(value) => [`₹${value}`, "Amount"]}
+                  contentStyle={{ color: "#2c2c2c" }}
+                />
                 <Bar dataKey="amount" fill="#F87171" radius={[0, 4, 4, 0]} />
               </BarChart>
             </ResponsiveContainer>

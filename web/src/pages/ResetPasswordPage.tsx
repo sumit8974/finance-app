@@ -67,11 +67,17 @@ const ResetPasswordPage = () => {
       description: "You can now log in with your new password.",
       variant: "default",
     });
-    navigate("/login", { replace: true });
+    setTimeout(() => {
+      window.location.href = "/login";
+    }, 2000);
   };
 
   if (validatingToken) {
-    return <Spinner className="h-10 w-10 mx-auto mt-20" />;
+    return (
+      <div className="flex justify-center items-center min-h-[85vh]">
+        <Spinner className="h-10 w-10 mx-auto mt-20" />
+      </div>
+    );
   }
 
   return (
