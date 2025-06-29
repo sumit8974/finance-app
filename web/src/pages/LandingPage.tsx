@@ -20,6 +20,7 @@ import {
   Clock,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 
 const LandingPage = () => {
   const { isAuthenticated } = useAuth();
@@ -95,11 +96,12 @@ const LandingPage = () => {
               </Button>
             </Link>
             <Link to="/register">
-              <Button className="font-medium shadow-lg">
-                Get Started
-              </Button>
+              <Button className="font-medium shadow-lg">Get Started</Button>
             </Link>
           </div>
+        </div>
+        <div className="absolute right-4 top-20 z-50">
+          <ThemeSwitcher />
         </div>
       </header>
 
@@ -207,8 +209,8 @@ const LandingPage = () => {
             Ready to Transform Your Financial Future?
           </h2>
           <p className="text-xl text-primary-foreground/90 mb-12 leading-relaxed">
-            Join users who have already taken control of their
-            finances. Start your journey to financial freedom today.
+            Join users who have already taken control of their finances. Start
+            your journey to financial freedom today.
           </p>
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
             <Link to="/register">
