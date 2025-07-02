@@ -1,56 +1,8 @@
-# Welcome to your Lovable project
+# Frontend Application
 
-## Project info
+This directory contains the frontend web application for the Finance App.
 
-**URL**: https://lovable.dev/projects/22eed440-139f-4104-bcfb-250e63b9cde1
-
-## How can I edit this code?
-
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/22eed440-139f-4104-bcfb-250e63b9cde1) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
+## Technologies Used
 
 This project is built with:
 
@@ -59,15 +11,88 @@ This project is built with:
 - React
 - shadcn-ui
 - Tailwind CSS
+- Axios (for API communication)
+- Recharts (for charts and data visualization)
+- React Router (for navigation)
+- Zod (for schema validation)
 
-## How can I deploy this project?
+## Getting Started
 
-Simply open [Lovable](https://lovable.dev/projects/22eed440-139f-4104-bcfb-250e63b9cde1) and click on Share -> Publish.
+### Prerequisites
 
-## Can I connect a custom domain to my Lovable project?
+- Node.js and npm (or yarn)
 
-Yes it is!
+### Setup and Running
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+1.  **Navigate to the web directory:**
+    If you are in the root of the project, change to the `web` directory:
+    ```bash
+    cd web
+    ```
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+2.  **Install dependencies:**
+    ```bash
+    npm install
+    # or
+    # yarn install
+    ```
+
+3.  **Configure Environment Variables:**
+    Create a `.env` file in this `web/` directory (e.g., `web/.env`). This file is used to configure the application, primarily to set the base URL for the backend API.
+    Example:
+    ```env
+    VITE_API_BASE_URL=http://localhost:8080/api
+    ```
+    Replace `http://localhost:8080/api` with the actual URL where your backend API is running.
+
+4.  **Run the development server:**
+    ```bash
+    npm run dev
+    # or
+    # yarn dev
+    ```
+    This will start the Vite development server, typically available at `http://localhost:5173`. The application will automatically reload if you make changes to the source files.
+
+5.  **Build for production:**
+    To create a production build:
+    ```bash
+    npm run build
+    # or
+    # yarn build
+    ```
+    The production-ready files will be placed in the `dist/` directory.
+
+## Project Structure Highlights
+
+-   `src/`: Contains the main source code for the React application.
+    -   `main.tsx`: The entry point of the application.
+    -   `App.tsx`: The root component, setting up routing and global providers.
+    -   `pages/`: Components representing different pages/views of the application.
+    -   `components/`: Reusable UI components.
+        -   `ui/`: Auto-generated components from shadcn-ui.
+    -   `api/`: Code related to backend API communication (e.g., Axios instance).
+    -   `context/`: React context providers for global state management.
+    -   `hooks/`: Custom React hooks.
+    -   `lib/`: Utility functions and libraries.
+-   `public/`: Static assets that are served directly.
+-   `index.html`: The main HTML file for the single-page application.
+-   `vite.config.ts`: Vite configuration file.
+-   `tailwind.config.ts`: Tailwind CSS configuration.
+-   `tsconfig.json`: TypeScript configuration.
+
+## Available Scripts
+
+In the `package.json` file, you can find several scripts:
+
+-   `dev`: Starts the development server.
+-   `build`: Builds the application for production.
+-   `lint`: Lints the codebase using ESLint.
+-   `preview`: Serves the production build locally for preview.
+
+## Further Information
+
+For more details on the overall project, including the backend setup, please refer to the main `README.md` file in the root directory of the repository.
+
+---
+
+*This README was updated to provide general setup and development information. Previous Lovable-specific content has been removed or generalized.*
