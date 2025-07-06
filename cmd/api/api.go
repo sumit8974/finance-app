@@ -17,6 +17,7 @@ import (
 	"github.com/sumit8974/finance-tracker/internal/auth"
 	"github.com/sumit8974/finance-tracker/internal/env"
 	"github.com/sumit8974/finance-tracker/internal/mail"
+	"github.com/sumit8974/finance-tracker/internal/ocr"
 	"github.com/sumit8974/finance-tracker/internal/ratelimiter"
 	"github.com/sumit8974/finance-tracker/internal/store"
 	httpSwagger "github.com/swaggo/http-swagger/v2"
@@ -29,6 +30,7 @@ type application struct {
 	authenticator auth.Authenticator
 	logger        *zap.SugaredLogger
 	mailer        mail.MailerClient
+	ocrService    ocr.OCRService
 	rateLimiter   ratelimiter.RateLimiter
 }
 
@@ -91,7 +93,7 @@ func (app *application) mount() http.Handler {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 	r.Use(cors.Handler(cors.Options{
-		AllowedOrigins:   []string{env.GetString("CORS_ALLOWED_ORIGIN", "http://localhost:8081")},
+		AllowedOrigins:   []string{env.GetString("CORS_ALLOWED_ORIGIN", "http://localhost:8080")},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 		ExposedHeaders:   []string{"Link"},
@@ -149,6 +151,9 @@ func (app *application) mount() http.Handler {
 			r.Post("/forgot-password", app.forgotPasswordHandler)
 			r.Get("/validate-reset-token/{token}", app.validateResetPasswordTokenHandler)
 			r.Put("/reset-password", app.resetPasswordHandler)
+		})
+		r.Route("/receipts", func(r chi.Router) {
+			r.Post("/", app.processReceipt)
 		})
 	})
 

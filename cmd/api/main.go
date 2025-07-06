@@ -8,6 +8,7 @@ import (
 	"github.com/sumit8974/finance-tracker/internal/auth"
 	"github.com/sumit8974/finance-tracker/internal/env"
 	"github.com/sumit8974/finance-tracker/internal/mail"
+	"github.com/sumit8974/finance-tracker/internal/ocr"
 	"github.com/sumit8974/finance-tracker/internal/ratelimiter"
 	"github.com/sumit8974/finance-tracker/internal/store"
 	"go.uber.org/zap"
@@ -123,7 +124,7 @@ func main() {
 	if err != nil {
 		logger.Fatal(err)
 	}
-
+	ocrService := ocr.NewOCRService()
 	app := &application{
 		config: cfg,
 		store:  store,
@@ -131,6 +132,7 @@ func main() {
 		logger:        logger,
 		mailer:        mailTrap,
 		authenticator: jwtAuthenticator,
+		ocrService:   ocrService,
 		rateLimiter:   rateLimiter,
 	}
 	mux := app.mount()

@@ -395,6 +395,35 @@ paths:
       summary: Healthcheck
       tags:
       - ops
+  /receipts:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Process a receipt image and extract text using OCR
+      parameters:
+      - description: Receipt image file
+        in: formData
+        name: receipt
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Process receipt
+      tags:
+      - receipts
   /transactions:
     get:
       description: List transactions for the authenticated user
