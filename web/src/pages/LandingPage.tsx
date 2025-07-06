@@ -12,7 +12,6 @@ import {
   Users,
   PieChart,
   TrendingUp,
-  Shield,
   Smartphone,
   ArrowRight,
   CheckCircle,

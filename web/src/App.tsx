@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -10,8 +9,6 @@ import RegisterPage from "./pages/RegisterPage";
 import Dashboard from "./pages/Dashboard";
 import Transactions from "./pages/Transactions";
 import Analytics from "./pages/Analytics";
-import Groups from "./pages/Groups";
-import GroupDetail from "./pages/GroupDetail";
 import ProtectedRoute from "./components/ProtectedRoute";
 import NotFound from "./pages/NotFound";
 import VerifyAccount from "./pages/VerifyAccount";
@@ -44,8 +41,6 @@ const App = () => (
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/transactions" element={<Transactions />} />
             <Route path="/analytics" element={<Analytics />} />
-            <Route path="/groups" element={<Groups />} />
-            <Route path="/groups/:id" element={<GroupDetail />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />

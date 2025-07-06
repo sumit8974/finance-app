@@ -49,8 +49,6 @@ const Analytics = () => {
   const {
     transactions,
     getTransactionsByMonth,
-    groups,
-    getGroupTransactions,
     getPersonalTransactions,
   } = useTransactions();
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -63,11 +61,6 @@ const Analytics = () => {
 
   // Get personal transactions
   const personalTransactions = getPersonalTransactions();
-
-  // Get group transactions
-  const groupTransactions = selectedGroupId
-    ? getGroupTransactions(selectedGroupId)
-    : transactions.filter((t) => t.groupId);
 
   // For pie chart - Expense by category
   const getCategoryData = (transactionsList) => {
@@ -107,19 +100,11 @@ const Analytics = () => {
     () => filterByMonthYear(personalTransactions, currentMonth, currentYear),
     [personalTransactions, currentMonth, currentYear]
   );
-  const groupMonthlyTransactions = useMemo(
-    () => filterByMonthYear(groupTransactions, currentMonth, currentYear),
-    [groupTransactions, currentMonth, currentYear]
-  );
 
   // Expense by category data (for selected month)
   const personalCategoryData = useMemo(
     () => getCategoryData(personalMonthlyTransactions),
     [personalMonthlyTransactions]
-  );
-  const groupCategoryData = useMemo(
-    () => getCategoryData(groupMonthlyTransactions),
-    [groupMonthlyTransactions]
   );
 
   // For line chart - Monthly spending trend (last 6 months)
@@ -161,10 +146,6 @@ const Analytics = () => {
     () => getMonthlyTrend(personalTransactions),
     [personalTransactions]
   );
-  const groupMonthlyTrend = useMemo(
-    () => getMonthlyTrend(groupTransactions),
-    [groupTransactions]
-  );
 
   // For bar chart - Daily spending (current month)
   const getDailySpending = (transactionsList) => {
@@ -198,34 +179,6 @@ const Analytics = () => {
   const personalDailySpending = useMemo(
     () => getDailySpending(personalTransactions),
     [personalTransactions, currentMonth, currentYear]
-  );
-  const groupDailySpending = useMemo(
-    () => getDailySpending(groupTransactions),
-    [groupTransactions, currentMonth, currentYear]
-  );
-
-  // Group filter selector
-  const groupFilterSelect = (
-    <div className="mb-4">
-      <Select
-        value={selectedGroupId || "all"}
-        onValueChange={(value) =>
-          setSelectedGroupId(value === "all" ? null : value)
-        }
-      >
-        <SelectTrigger className="w-full md:w-[200px]">
-          <SelectValue placeholder="Select Group" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">All Groups</SelectItem>
-          {groups.map((group) => (
-            <SelectItem key={group.id} value={group.id}>
-              {group.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
   );
 
   // Format for the tooltip value
@@ -425,147 +378,13 @@ const Analytics = () => {
     </div>
   );
 
-  // Tab content for group analytics - use same styling improvements
-  const groupTabContent = (
-    <div className="space-y-6">
-      {groupFilterSelect}
-
-      {/* Monthly Trend Chart */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Monthly Group Spending Trend</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart
-                data={groupMonthlyTrend}
-                margin={{
-                  top: 10,
-                  right: 30,
-                  left: 20,
-                  bottom: 20,
-                }}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip formatter={(value) => [`₹${value}`, ""]} />
-                <Legend wrapperStyle={{ paddingTop: 15 }} />
-                <Line
-                  type="monotone"
-                  dataKey="expense"
-                  stroke="#F87171"
-                  name="Expenses"
-                  strokeWidth={2}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="income"
-                  stroke="#4ADE80"
-                  name="Income"
-                  strokeWidth={2}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="savings"
-                  stroke="#60A5FA"
-                  name="Savings"
-                  strokeWidth={2}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Category and Daily Spending Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Expense by Category Chart */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Group Expense by Category</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[320px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart margin={{ top: 10, right: 10, bottom: 40, left: 10 }}>
-                  <Pie
-                    data={groupCategoryData}
-                    cx="50%"
-                    cy="45%"
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                    nameKey="name"
-                    label={renderCustomPieLabel}
-                    labelLine={false}
-                  >
-                    {groupCategoryData.map((entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={COLORS[index % COLORS.length]}
-                      />
-                    ))}
-                  </Pie>
-                  <Tooltip content={renderCustomPieTooltip} />
-                  <Legend
-                    layout="horizontal"
-                    verticalAlign="bottom"
-                    align="center"
-                    wrapperStyle={{ paddingTop: 20 }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Daily Spending Chart */}
-        <Card>
-          <CardHeader>
-            <CardTitle>
-              Daily Group Spending for {format(currentDate, "MMMM yyyy")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[320px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={groupDailySpending}
-                  margin={{
-                    top: 10,
-                    right: 30,
-                    left: 20,
-                    bottom: 20,
-                  }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="day" />
-                  <YAxis />
-                  <Tooltip formatter={(value) => [`₹${value}`, "Expenses"]} />
-                  <Bar dataKey="expense" fill="#F87171" name="Expenses" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
-
   // Define tabs
   const tabs = [
     {
       value: "personal",
       label: "Personal",
       content: personalTabContent,
-    },
-    {
-      value: "group",
-      label: "Group",
-      content: groupTabContent,
-    },
+    }
   ];
   return (
     <div className="space-y-6 animate-fade-in">

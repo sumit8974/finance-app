@@ -31,7 +31,6 @@ const Dashboard = () => {
   const { user } = useAuth();
   const {
     getTransactionsByMonth,
-    getGroupTransactions,
     getPersonalTransactions,
     groups, // Add addingTransaction state
     isLoading,
@@ -54,17 +53,6 @@ const Dashboard = () => {
       transactionDate.getFullYear() === currentYear
     );
   });
-
-  // Get group transactions based on selected group or all groups
-  const groupTransactions = selectedGroupId
-    ? getGroupTransactions(selectedGroupId).filter((t) => {
-        const transactionDate = new Date(t.date);
-        return (
-          transactionDate.getMonth() === currentMonth &&
-          transactionDate.getFullYear() === currentYear
-        );
-      })
-    : monthlyTransactions.filter((t) => t.groupId);
 
   // Handle dialog state change
   const handleDialogChange = (open: boolean) => {
@@ -123,16 +111,13 @@ const Dashboard = () => {
 
   // Financial summaries
   const personalSummary = calculateFinancialSummary(personalTransactions);
-  const groupSummary = calculateFinancialSummary(groupTransactions);
 
   // Category data
   const personalCategoryData = getCategoryData(personalTransactions);
-  const groupCategoryData = getCategoryData(groupTransactions);
 
   // Recent transactions
   const recentPersonalTransactions =
     getRecentTransactions(personalTransactions);
-  const recentGroupTransactions = getRecentTransactions(groupTransactions);
 
   // Render financial summary cards
   const renderSummaryCards = (summary) => (
@@ -313,32 +298,13 @@ const Dashboard = () => {
     </div>
   );
 
-  // Tab content for group view
-  const groupTabContent = (
-    <div className="space-y-6">
-      {groupFilterSelect}
-
-      {renderSummaryCards(groupSummary)}
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {renderCategoryChart(groupCategoryData)}
-        {renderRecentTransactions(recentGroupTransactions)}
-      </div>
-    </div>
-  );
-
   // Define tabs
   const tabs = [
     {
       value: "personal",
       label: "Personal",
       content: personalTabContent,
-    },
-    {
-      value: "group",
-      label: "Group",
-      content: groupTabContent,
-    },
+    }
   ];
 
   return (

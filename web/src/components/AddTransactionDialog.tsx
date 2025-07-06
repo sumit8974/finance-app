@@ -31,17 +31,15 @@ import { toast } from "@/hooks/use-toast";
 interface AddTransactionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  initialGroupId?: string;
   editTransaction?: Transaction | null;
 }
 
 const AddTransactionDialog: React.FC<AddTransactionDialogProps> = ({
   open,
   onOpenChange,
-  initialGroupId,
   editTransaction,
 }) => {
-  const { addTransaction, updateTransaction, groups, categories } =
+  const { addTransaction, updateTransaction, categories } =
     useTransactions();
 
   // Form state
@@ -51,7 +49,6 @@ const AddTransactionDialog: React.FC<AddTransactionDialogProps> = ({
     description: "",
     category: "",
     date: new Date(),
-    groupId: initialGroupId || undefined,
   });
 
   // Track if we're in edit mode
@@ -68,7 +65,6 @@ const AddTransactionDialog: React.FC<AddTransactionDialogProps> = ({
           description: editTransaction.description,
           category: editTransaction.category.toString(),
           date: new Date(editTransaction.date),
-          groupId: editTransaction.groupId,
         });
         setIsEditMode(true);
       } else {
@@ -77,7 +73,7 @@ const AddTransactionDialog: React.FC<AddTransactionDialogProps> = ({
         setIsEditMode(false);
       }
     }
-  }, [open, editTransaction, initialGroupId]);
+  }, [open, editTransaction]);
 
   // Handle form changes
   const handleFormChange = (field: string, value: any) => {
@@ -95,7 +91,6 @@ const AddTransactionDialog: React.FC<AddTransactionDialogProps> = ({
       description: "",
       category: "",
       date: new Date(),
-      groupId: initialGroupId || undefined,
     });
     setIsEditMode(false);
   };
@@ -121,7 +116,6 @@ const AddTransactionDialog: React.FC<AddTransactionDialogProps> = ({
       category: formState.category,
       date: formState.date,
       type: formState.type,
-      groupId: formState.groupId,
     };
 
     // Either update existing transaction or create a new one
@@ -340,7 +334,7 @@ const AddTransactionDialog: React.FC<AddTransactionDialogProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-4 items-center gap-4">
+          {/* <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="group" className="text-right">
               Group
             </Label>
@@ -366,7 +360,7 @@ const AddTransactionDialog: React.FC<AddTransactionDialogProps> = ({
                 ))}
               </SelectContent>
             </Select>
-          </div>
+          </div> */}
 
           <DialogFooter>
             <Button type="submit">

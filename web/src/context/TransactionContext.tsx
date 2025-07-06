@@ -46,12 +46,7 @@ type TransactionContextType = {
     transaction: Partial<Transaction>
   ) => Promise<void>;
   getTransactionsByMonth: (month: number, year: number) => Transaction[];
-  getGroupTransactions: (groupId: string) => Transaction[];
   getPersonalTransactions: () => Transaction[];
-  addGroup: (name: string, members: string[]) => void;
-  updateGroup: (id: string, data: Partial<TransactionGroup>) => void;
-  deleteGroup: (id: string) => void;
-  getGroupById: (id: string) => TransactionGroup | undefined;
   isLoading: boolean;
 };
 
@@ -63,12 +58,7 @@ const TransactionContext = createContext<TransactionContextType>({
   deleteTransaction: async () => {},
   updateTransaction: async () => {},
   getTransactionsByMonth: () => [],
-  getGroupTransactions: () => [],
   getPersonalTransactions: () => [],
-  addGroup: () => {},
-  updateGroup: () => {},
-  deleteGroup: () => {},
-  getGroupById: () => undefined,
   isLoading: false,
 });
 
@@ -289,63 +279,9 @@ export const TransactionProvider: React.FC<{ children: React.ReactNode }> = ({
     });
   };
 
-  // Get transactions for a specific group
-  const getGroupTransactions = (groupId: string) => {
-    return transactions.filter((t) => t.groupId === groupId);
-  };
-
   // Get personal transactions (not associated with any group)
   const getPersonalTransactions = () => {
     return transactions.filter((t) => !t.groupId);
-  };
-
-  // Add a new group
-  const addGroup = (name: string, members: string[]) => {
-    if (!user) return;
-
-    const newGroup: TransactionGroup = {
-      id: `group-${Date.now()}`,
-      name,
-      members: [...members, user.id], // Include the creator
-      createdBy: user.id,
-    };
-
-    setGroups((prev) => [...prev, newGroup]);
-
-    toast({
-      title: "Group created",
-      description: `${name} has been created with ${
-        members.length + 1
-      } members`,
-    });
-  };
-
-  // Update group
-  const updateGroup = (id: string, data: Partial<TransactionGroup>) => {
-    setGroups((prev) => prev.map((g) => (g.id === id ? { ...g, ...data } : g)));
-
-    toast({
-      title: "Group updated",
-    });
-  };
-
-  // Delete group
-  const deleteGroup = (id: string) => {
-    setGroups((prev) => prev.filter((g) => g.id !== id));
-
-    // Also remove group ID from related transactions
-    setTransactions((prev) =>
-      prev.map((t) => (t.groupId === id ? { ...t, groupId: undefined } : t))
-    );
-
-    toast({
-      title: "Group deleted",
-    });
-  };
-
-  // Get group by ID
-  const getGroupById = (id: string) => {
-    return groups.find((g) => g.id === id);
   };
 
   const value = {
@@ -356,12 +292,7 @@ export const TransactionProvider: React.FC<{ children: React.ReactNode }> = ({
     deleteTransaction,
     updateTransaction,
     getTransactionsByMonth,
-    getGroupTransactions,
     getPersonalTransactions,
-    addGroup,
-    updateGroup,
-    deleteGroup,
-    getGroupById,
     isLoading,
   };
 

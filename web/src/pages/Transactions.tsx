@@ -4,7 +4,6 @@ import { Card } from '@/components/ui/card';
 import {
   Select,
   SelectContent,
-  SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
@@ -28,9 +27,7 @@ const Transactions = () => {
   const { 
     transactions, 
     getTransactionsByMonth,
-    getPersonalTransactions,
-    getGroupTransactions,
-    groups
+    getPersonalTransactions
   } = useTransactions();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [searchTerm, setSearchTerm] = useState('');
@@ -54,14 +51,6 @@ const Transactions = () => {
     return transactionDate.getMonth() === currentMonth && transactionDate.getFullYear() === currentYear;
   });
   
-  // Get group transactions for current month
-  const groupTransactions = selectedGroupId 
-    ? getGroupTransactions(selectedGroupId).filter(t => {
-        const transactionDate = new Date(t.date);
-        return transactionDate.getMonth() === currentMonth && transactionDate.getFullYear() === currentYear;
-      }) 
-    : monthlyTransactions.filter(t => t.groupId);
-  
   // Get all unique categories
   const categories = [...new Set(transactions.map(t => t.category))].sort();
   
@@ -84,9 +73,7 @@ const Transactions = () => {
   };
   
   // Apply filters to personal and group transactions
-  const filteredPersonalTransactions = applyFilters(personalTransactions);
-  const filteredGroupTransactions = applyFilters(groupTransactions);
-  
+  const filteredPersonalTransactions = applyFilters(personalTransactions);  
   // Handle opening the add transaction dialog
   const handleAddTransaction = () => {
     setEditingTransaction(null);
@@ -193,7 +180,7 @@ const Transactions = () => {
                 <span>Filters</span>
               </div>
               <span className="text-xs text-muted-foreground">
-                {activeTab === "personal" ? filteredPersonalTransactions.length : filteredGroupTransactions.length} results
+                {activeTab === "personal" ? filteredPersonalTransactions.length : 0} results
               </span>
             </Button>
           </CollapsibleTrigger>
@@ -241,28 +228,6 @@ const Transactions = () => {
     );
   };
   
-  // Group filter selector
-  const groupFilterSelect = (
-    <div className="mb-4">
-      <Select
-        value={selectedGroupId || "all"}
-        onValueChange={(value) => setSelectedGroupId(value === "all" ? null : value)}
-      >
-        <SelectTrigger className="w-full md:w-[200px]">
-          <SelectValue placeholder="Select Group" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">All Groups</SelectItem>
-          {groups.map((group) => (
-            <SelectItem key={group.id} value={group.id}>
-              {group.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
-  );
-  
   // Render transactions list
   const renderTransactionsList = (transactions: Transaction[]) => {
     if (transactions.length > 0) {
@@ -302,29 +267,12 @@ const Transactions = () => {
     </div>
   );
   
-  // Tab content for group transactions
-  const groupTabContent = (
-    <div>
-      {groupFilterSelect}
-      {renderFilters()}
-      
-      <div className="space-y-4">
-        {renderTransactionsList(filteredGroupTransactions)}
-      </div>
-    </div>
-  );
-  
   // Define tabs
   const tabs = [
     {
       value: "personal",
       label: "Personal",
       content: personalTabContent
-    },
-    {
-      value: "group",
-      label: "Group",
-      content: groupTabContent
     }
   ];
   
@@ -351,7 +299,6 @@ const Transactions = () => {
       <AddTransactionDialog 
         open={isAddDialogOpen} 
         onOpenChange={handleDialogChange}
-        initialGroupId={activeTab === "group" ? selectedGroupId || undefined : undefined}
         editTransaction={editingTransaction}
       />
     </div>
