@@ -153,6 +153,7 @@ func (app *application) mount() http.Handler {
 			r.Put("/reset-password", app.resetPasswordHandler)
 		})
 		r.Route("/receipts", func(r chi.Router) {
+			r.Use(app.AuthTokenMiddleware)
 			r.Post("/", app.processReceipt)
 		})
 	})
