@@ -1,17 +1,19 @@
 package main
 
 import (
+	"context"
 	"time"
 
 	"github.com/joho/godotenv"
 	"github.com/sumit8974/finance-tracker/cmd/migrate/db"
 	"github.com/sumit8974/finance-tracker/internal/auth"
 	"github.com/sumit8974/finance-tracker/internal/env"
+	"github.com/sumit8974/finance-tracker/internal/extractor"
 	"github.com/sumit8974/finance-tracker/internal/mail"
-	"github.com/sumit8974/finance-tracker/internal/ocr"
 	"github.com/sumit8974/finance-tracker/internal/ratelimiter"
 	"github.com/sumit8974/finance-tracker/internal/store"
 	"go.uber.org/zap"
+	"google.golang.org/genai"
 )
 
 const version = "1.1.0"
@@ -61,8 +63,8 @@ func main() {
 		// 	},
 		env: env.GetString("ENV", "development"),
 		mail: mailConfig{
-			exp:       time.Hour * 24 * 3, // 3 days
-			fromEmail: env.GetString("FROM_EMAIL", ""),
+			exp:                      time.Hour * 24 * 3, // 3 days
+			fromEmail:                env.GetString("FROM_EMAIL", ""),
 			maxResetPasswordRequests: env.GetInt("MAX_RESET_PASSWORD_REQUESTS", 3),
 			sendGrid: sendGridConfig{
 				apiKey: env.GetString("SENDGRID_API_KEY", ""),
@@ -124,7 +126,14 @@ func main() {
 	if err != nil {
 		logger.Fatal(err)
 	}
-	ocrService := ocr.NewOCRService()
+
+	ctx := context.Background()
+    // The client gets the API key from the environment variable `GEMINI_API_KEY`.
+    client, err := genai.NewClient(ctx, nil)
+    if err != nil {
+        logger.Fatal(err)
+    }
+	extractorService := extractor.NewGeminiExtractor(client)
 	app := &application{
 		config: cfg,
 		store:  store,
@@ -132,8 +141,8 @@ func main() {
 		logger:        logger,
 		mailer:        mailTrap,
 		authenticator: jwtAuthenticator,
-		ocrService:   ocrService,
 		rateLimiter:   rateLimiter,
+		extractor:     extractorService,
 	}
 	mux := app.mount()
 

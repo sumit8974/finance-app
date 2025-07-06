@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+
+	_ "github.com/sumit8974/finance-tracker/internal/extractor"
 )
 
 // processReceipt godoc
@@ -14,7 +16,7 @@ import (
 //	@Accept			multipart/form-data
 //	@Produce		json
 //	@Param			receipt	formData	file	true	"Receipt image file"
-//	@Success		200		{object}	map[string]string
+//	@Success		200		{object}	extractor.ExtractedTransaction
 //	@Failure		400		{object}	error
 //	@Failure		500		{object}	error
 //	@Router			/receipts [post]
@@ -35,13 +37,14 @@ func (app *application) processReceipt(w http.ResponseWriter, r *http.Request) {
 		app.badRequestResponse(w, r, fmt.Errorf("error reading receipt file: %v", err))
 		return
 	}
-	text, err := app.ocrService.ExtractTextFromImage(fileBytes)
+	data, err := app.extractor.ExtractTransaction(fileBytes, "receipt.png")
 	if err != nil {
-		app.internalServerError(w, r, fmt.Errorf("error extracting text from receipt: %v", err))
+		app.badRequestResponse(w, r, fmt.Errorf("error extracting transaction: %v", err))
 		return
 	}
-	fmt.Printf("Extracted text from receipt: %s\n", text)
-	if err := app.jsonResponse(w, http.StatusOK, map[string]string{"text": text}); err != nil {
-		app.logger.Errorw("failed to write response", "error", err)
+	if err := app.jsonResponse(w, http.StatusOK, data); err != nil {
+		app.internalServerError(w, r, fmt.Errorf("error sending response: %v", err))
+		return
 	}
+	app.logger.Infof("Receipt processed successfully: %s", r.FormValue("receipt"))
 }

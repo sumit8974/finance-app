@@ -365,10 +365,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/extractor.ExtractedTransaction"
                         }
                     },
                     "400": {
@@ -717,6 +714,23 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "extractor.ExtractedTransaction": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "category": {
+                    "type": "string"
+                },
+                "date": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                }
+            }
+        },
         "main.CreateTransactionRequest": {
             "type": "object",
             "properties": {

@@ -5,6 +5,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,10 +24,11 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Calendar as CalendarIcon } from "lucide-react";
+import { Calendar as CalendarIcon, Sparkles } from "lucide-react";
 import { useTransactions, Transaction } from "@/context/TransactionContext";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
+import ReceiptUploadSection from "./ReceiptUploadSection";
 
 interface AddTransactionDialogProps {
   open: boolean;
@@ -34,13 +36,19 @@ interface AddTransactionDialogProps {
   editTransaction?: Transaction | null;
 }
 
+interface ExtractedData {
+  amount: number;
+  description: string;
+  category: string;
+  date: Date;
+}
+
 const AddTransactionDialog: React.FC<AddTransactionDialogProps> = ({
   open,
   onOpenChange,
   editTransaction,
 }) => {
-  const { addTransaction, updateTransaction, categories } =
-    useTransactions();
+  const { addTransaction, updateTransaction, categories } = useTransactions();
 
   // Form state
   const [formState, setFormState] = useState({
@@ -53,6 +61,7 @@ const AddTransactionDialog: React.FC<AddTransactionDialogProps> = ({
 
   // Track if we're in edit mode
   const [isEditMode, setIsEditMode] = useState(false);
+  const [isDataExtracted, setIsDataExtracted] = useState(false);
 
   // This effect runs when the dialog opens/closes or when editTransaction changes
   useEffect(() => {
@@ -71,6 +80,7 @@ const AddTransactionDialog: React.FC<AddTransactionDialogProps> = ({
         // New transaction - set up a fresh form with default values
         resetForm();
         setIsEditMode(false);
+        setIsDataExtracted(false);
       }
     }
   }, [open, editTransaction]);
@@ -137,6 +147,18 @@ const AddTransactionDialog: React.FC<AddTransactionDialogProps> = ({
     onOpenChange(false);
   };
 
+  const handleDataExtracted = (data: ExtractedData) => {
+    setFormState((prev) => ({
+      ...prev,
+      amount: data.amount.toString(),
+      description: data.description,
+      category: data.category.charAt(0).toUpperCase() + data.category.slice(1), // Capitalize first letter
+      date: data.date,
+      type: "expense",
+    }));
+    setIsDataExtracted(true);
+  };
+
   return (
     <Dialog
       open={open}
@@ -152,10 +174,41 @@ const AddTransactionDialog: React.FC<AddTransactionDialogProps> = ({
     >
       <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
             {isEditMode ? "Edit Transaction" : "Add New Transaction"}
+            {isDataExtracted && !isEditMode && (
+              <div className="flex items-center gap-1 text-xs font-normal text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
+                <Sparkles className="h-3 w-3" />
+                AI Extracted
+              </div>
+            )}
           </DialogTitle>
+          <DialogDescription>
+            {isEditMode
+              ? "Update the transaction details below."
+              : "Add a new transaction manually or upload a receipt to auto-fill the form."}
+          </DialogDescription>
         </DialogHeader>
+        {!isEditMode && (
+          <form onSubmit={handleSubmit} className="space-y-6 py-2">
+            {/* Receipt Upload Section - Only show for new transactions */}
+            <ReceiptUploadSection onDataExtracted={handleDataExtracted} />
+            {/* AI Extracted Data Indicator */}
+            {isDataExtracted && !isEditMode && (
+              <div className="p-2 bg-blue-50 rounded-md border border-blue-200">
+                <div className="flex items-center gap-2 text-blue-800">
+                  <Sparkles className="h-3 w-3" />
+                  <span className="text-xs font-medium">
+                    Data extracted from receipt
+                  </span>
+                </div>
+                <p className="text-xs text-blue-600 mt-0.5">
+                  Review and adjust the information below if needed.
+                </p>
+              </div>
+            )}
+          </form>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4 py-2">
           <Tabs
@@ -333,34 +386,6 @@ const AddTransactionDialog: React.FC<AddTransactionDialogProps> = ({
               </Popover>
             </div>
           </div>
-
-          {/* <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="group" className="text-right">
-              Group
-            </Label>
-            <Select
-              value={formState.groupId || "no-group"}
-              onValueChange={(val) =>
-                handleFormChange(
-                  "groupId",
-                  val === "no-group" ? undefined : val
-                )
-              }
-              disabled={!!initialGroupId}
-            >
-              <SelectTrigger className="col-span-3">
-                <SelectValue placeholder="Personal (No group)" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="no-group">Personal (No group)</SelectItem>
-                {groups.map((group) => (
-                  <SelectItem key={group.id} value={group.id}>
-                    {group.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div> */}
 
           <DialogFooter>
             <Button type="submit">

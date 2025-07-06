@@ -1,5 +1,16 @@
 basePath: /v1
 definitions:
+  extractor.ExtractedTransaction:
+    properties:
+      amount:
+        type: number
+      category:
+        type: string
+      date:
+        type: string
+      description:
+        type: string
+    type: object
   main.CreateTransactionRequest:
     properties:
       amount:
@@ -412,9 +423,7 @@ paths:
         "200":
           description: OK
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/extractor.ExtractedTransaction'
         "400":
           description: Bad Request
           schema: {}

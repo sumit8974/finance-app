@@ -16,8 +16,8 @@ import (
 	"github.com/sumit8974/finance-tracker/docs"
 	"github.com/sumit8974/finance-tracker/internal/auth"
 	"github.com/sumit8974/finance-tracker/internal/env"
+	"github.com/sumit8974/finance-tracker/internal/extractor"
 	"github.com/sumit8974/finance-tracker/internal/mail"
-	"github.com/sumit8974/finance-tracker/internal/ocr"
 	"github.com/sumit8974/finance-tracker/internal/ratelimiter"
 	"github.com/sumit8974/finance-tracker/internal/store"
 	httpSwagger "github.com/swaggo/http-swagger/v2"
@@ -30,8 +30,8 @@ type application struct {
 	authenticator auth.Authenticator
 	logger        *zap.SugaredLogger
 	mailer        mail.MailerClient
-	ocrService    ocr.OCRService
 	rateLimiter   ratelimiter.RateLimiter
+	extractor     extractor.ExtractorService
 }
 
 type config struct {
@@ -57,16 +57,16 @@ type sendGridConfig struct {
 }
 
 type mailTrapConfig struct {
-	apiKey string
+	apiKey  string
 	appPass string
 }
 
 type mailConfig struct {
-	sendGrid  sendGridConfig
-	mailTrap  mailTrapConfig
-	fromEmail string
+	sendGrid                 sendGridConfig
+	mailTrap                 mailTrapConfig
+	fromEmail                string
 	maxResetPasswordRequests int
-	exp       time.Duration
+	exp                      time.Duration
 }
 
 type authConfig struct {
