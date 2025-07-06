@@ -9,8 +9,8 @@ import {
 } from "@/components/ui/card";
 import {
   BarChart3,
-  Users,
   PieChart,
+  HardDriveUpload,
   TrendingUp,
   Smartphone,
   ArrowRight,
@@ -37,11 +37,11 @@ const LandingPage = () => {
       color: "bg-blue-500",
     },
     {
-      icon: Users,
-      title: "Group Management",
+      icon: HardDriveUpload,
+      title: "Receipt Scanner & Tracker",
       description:
-        "Effortlessly manage shared expenses with friends, family, or roommates. Split bills fairly and track group spending.",
-      color: "bg-green-500",
+        "Snap or import receipts to automatically extract merchant, date, line‑items, and amounts. Track expenses, categorize spending, and view insights at a glance.",
+      color: "bg-blue-600",
     },
     {
       icon: PieChart,
