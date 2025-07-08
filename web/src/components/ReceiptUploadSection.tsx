@@ -113,9 +113,7 @@ const ReceiptUploadSection: React.FC<ReceiptUploadSectionProps> = ({
     } catch (error) {
       toast({
         title: "Processing failed",
-        description: error
-          ? error.message
-          : "Failed to process the receipt. Please try again.",
+        description: "Failed to process the receipt. Please try again.",
         variant: "destructive",
       });
     } finally {
