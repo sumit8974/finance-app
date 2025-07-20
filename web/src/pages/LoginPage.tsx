@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { Eye, EyeOff } from "lucide-react";
-import api from "@/api/axios";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -45,19 +44,6 @@ const LoginPage = () => {
       setIsSubmitting(false);
     }
   };
-
-  // remove later
-  useEffect(() => {
-    const sendRequest = async () => {
-      await api.get("/health");
-    };
-    // Call once immediately
-    sendRequest();
-    // Set interval for every 2 minutes (120000 ms)
-    const intervalId = setInterval(sendRequest, 2 * 60 * 1000);
-    // Clean up on unmount
-    return () => clearInterval(intervalId);
-  }, []);
 
   return (
     <>
