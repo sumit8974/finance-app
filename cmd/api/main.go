@@ -46,7 +46,7 @@ func main() {
 		logger.Error("No .env file found, proceeding with default env vars")
 	}
 	cfg := config{
-		addr:        env.GetString("ADDR", ":8000"),
+		addr:        env.GetString("ADDR", ":8001"),
 		apiURL:      env.GetString("EXTERNAL_URL", "localhost:8000"),
 		frontendURL: env.GetString("FRONTEND_URL", "http://localhost:8081"),
 		db: dbConfig{
