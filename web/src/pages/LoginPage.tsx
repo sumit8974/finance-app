@@ -49,11 +49,7 @@ const LoginPage = () => {
   // remove later
   useEffect(() => {
     const sendRequest = async () => {
-      await api.get("/users/token", {
-        headers: {
-          Authorization: `Bearer `,
-        },
-      });
+      await api.get("/health");
     };
     // Call once immediately
     sendRequest();
