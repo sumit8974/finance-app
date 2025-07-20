@@ -1,4 +1,4 @@
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, useEffect } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { Eye, EyeOff } from "lucide-react";
+import api from "@/api/axios";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -45,6 +46,23 @@ const LoginPage = () => {
     }
   };
 
+  // remove later
+  useEffect(() => {
+    const sendRequest = async () => {
+      await api.get("/users/token", {
+        headers: {
+          Authorization: `Bearer `,
+        },
+      });
+    };
+    // Call once immediately
+    sendRequest();
+    // Set interval for every 2 minutes (120000 ms)
+    const intervalId = setInterval(sendRequest, 2 * 60 * 1000);
+    // Clean up on unmount
+    return () => clearInterval(intervalId);
+  }, []);
+
   return (
     <>
       <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-muted/30">
@@ -71,7 +89,10 @@ const LoginPage = () => {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="password">Password</Label>
-                <Link to="/forgot-password" className="text-sm text-primary hover:underline">
+                <Link
+                  to="/forgot-password"
+                  className="text-sm text-primary hover:underline"
+                >
                   Forgot password?
                 </Link>
               </div>
